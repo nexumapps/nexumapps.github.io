@@ -730,10 +730,10 @@ const KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6
    const finalTitle=conflicts||review?"Revisión necesaria":remaining?"Cambios pendientes":"Sincronización completada";
    const summary=`Enviadas: ${sent}; conflictos: ${conflicts}; pendientes: ${remaining}; cambios recibidos: ${received}; aplicados: ${applied}; para revisar: ${review}.`;
    status(finalTitle,summary);
-   alert(`Sincronización terminada.\n${summary}\nCiclos completados: ${cycles}${conflicts||review?"\nHay cambios que requieren revisión; no se sobrescribieron automáticamente.":""}`);
+   alert(`${conflicts||review?"🔴":"🟢"} Sincronización terminada.\n${summary}\nCiclos completados: ${cycles}${conflicts||review?"\n🔴 Hay cambios que requieren revisión; no se sobrescribieron automáticamente.":""}`);
   }catch(e){
    status("Sincronización pendiente",e.message+" Los datos locales se conservaron.");
-   alert("No se completó la sincronización: "+e.message+"\n\nLos datos locales siguen guardados y las operaciones se pueden reintentar.");
+   alert("🔴 No se completó la sincronización: "+e.message+"\n\n🟢 Los datos locales siguen guardados y las operaciones se pueden reintentar.");
   }finally{if(btn)btn.disabled=false;render();}
  }
  const saveBtn=$("saveSyncConfigBtn");if(saveBtn)saveBtn.onclick=()=>{const wid=$("syncWorkshopId").value.trim(),deviceLabel=$("syncDeviceLabel").value.trim();if(!/^[0-9a-f-]{36}$/i.test(wid)){alert("El ID del taller debe ser un UUID válido, proporcionado por el administrador.");return;}localStorage.setItem(CFG_KEY,JSON.stringify({workshopId:wid,deviceLabel}));render();};const syncBtn=$("syncNowBtn");if(syncBtn)syncBtn.onclick=run;
