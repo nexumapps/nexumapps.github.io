@@ -1,5 +1,5 @@
-const APP_VERSION="6.0-dev-v19";
-// V6.0-dev-v19: además de los cambios nuevos, procesa la bandeja segura ya recibida; conserva en revisión conflictos o snapshots que no pueda aplicar con seguridad.
+const APP_VERSION="6.0-dev-v20";
+// V6.0-dev-v20: coordina ciclos de envío/recepción en una pulsación; los conflictos y cambios inseguros siguen en revisión.
 const KEY="taller_electronica_v5";
 const ECON_CONFIG_KEY="taller_electronica_economia_config";
 const OLD_KEYS=["taller_electronica_v4","taller_electronica_v3","taller_electronica_v2","taller_electronica_v1"];
