@@ -1,4 +1,9 @@
 
+## V6.0-dev-v41
+- Alta de usuarios: respeta el trigger `on_auth_user_created`; el perfil inicial se crea con metadata y luego se actualiza a técnico, evitando el error `23505 profiles_pkey` por insertar el mismo perfil dos veces.
+- Contraseñas: sustituye los símbolos poco claros por el ojo SVG clásico abierto/cerrado, dentro del campo de texto.
+- Administración: mensajes de validación, alta y eliminación de usuario se muestran junto al formulario o acción que los genera.
+
 ## V6.0-dev-v40
 - Panel administrativo: añade eliminación permanente de usuarios con confirmación explícita, protección contra autoeliminación y protección de cuentas con registro de administrador global.
 - El backend retira membresías del usuario antes de eliminar la cuenta de autenticación; si falla la eliminación, intenta restaurar las membresías. Se conserva el registro de auditoría y no se toca el histórico de tickets/movimientos.
