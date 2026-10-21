@@ -1,3 +1,9 @@
+## V6.0-dev-v54 — cabecera compacta redistribuida
+- La barra conserva su altura discreta; no se aumenta el espacio vertical global.
+- La marca ocupa el espacio flexible del lado izquierdo y mantiene «Gestión del Taller» con la versión debajo del logo.
+- El usuario/estado de sesión y cierre de sesión quedan arriba a la derecha; sincronización e instalación se apilan debajo.
+- Se conservan IDs y funciones de los botones; sin cambios en autenticación, sincronización ni datos. Pendiente prueba visual en PWA.
+
 ## V6.0-dev-v53 — escala de cabecera ajustada
 - Aumenta ligeramente el logo, el texto de marca y el nombre de usuario; se conservan las dimensiones de todos los botones.
 - Ajustes específicos para móvil mantienen límites de ancho para reducir riesgo de desbordamiento.
