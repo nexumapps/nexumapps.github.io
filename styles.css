@@ -228,3 +228,26 @@ html body.auth-locked > header.topbar,html body.auth-locked > nav.tabs,html body
  .account-identity-status{font-size:12px}
  .account-identity-name{max-width:96px}
 }
+
+
+/* V6.0-dev-v54 — marca aprovecha el lado izquierdo; controles apilados a la derecha sin aumentar la barra. */
+.topbar{align-items:center;gap:12px}
+.brand{flex:1 1 auto;min-width:0;align-items:flex-start}
+.brand img{width:clamp(105px,20vw,190px);max-width:100%;height:44px;max-height:44px}
+.brand p{font-size:11px;line-height:1.18;white-space:normal}
+.topbar-right-column{display:flex;flex:0 0 auto;flex-direction:column;align-items:flex-end;justify-content:center;gap:3px;min-width:0}
+.topbar-actions{width:100%;min-height:30px}
+.topbar-tools{padding:0;gap:6px;background:transparent}
+.topbar-tools .sync-status,.topbar-tools .icon-action{width:32px;height:29px;min-width:32px;padding:4px}
+@media(max-width:600px){
+ .topbar{padding:9px 10px;gap:7px}
+ .brand{flex:1 1 0;gap:2px}
+ .brand img{width:clamp(82px,25vw,116px);height:36px;max-height:36px}
+ .brand p{font-size:10px;line-height:1.15;max-width:100%;overflow-wrap:anywhere}
+ .topbar-right-column{gap:2px;flex-shrink:0}
+ .topbar-actions{gap:4px;min-height:28px}
+ .account-identity-status{font-size:12px;gap:4px}
+ .account-identity-name{max-width:clamp(54px,20vw,96px)}
+ .topbar-tools{gap:5px;padding:0}
+ .topbar-tools .sync-status,.topbar-tools .icon-action{width:30px;height:28px;min-width:30px;padding:3px}
+}
