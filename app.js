@@ -1,4 +1,4 @@
-const APP_VERSION="6.0-dev-v49";
+const APP_VERSION="6.0-dev-v50";
 // V6.0-dev-v38: confirmar contraseña inicial y revelar/ocultar contraseñas; publicar al elegir conservar local y señalizar errores/éxitos con iconos.
 const KEY="taller_electronica_v5";
 const ECON_CONFIG_KEY="taller_electronica_economia_config";
@@ -488,7 +488,7 @@ if (installButton) {
 }
 window.addEventListener("beforeinstallprompt", event => {
   event.preventDefault(); deferredInstallPrompt = event;
-  if (installButton) { installButton.classList.remove("hidden"); installButton.textContent = "Instalar NEXUM"; }
+  if (installButton) { installButton.classList.remove("hidden"); installButton.title = "Instalar aplicación"; }
 });
 if (installButton) installButton.addEventListener("click", async () => {
   if (!deferredInstallPrompt) {
@@ -919,6 +919,7 @@ const KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6
  /* V6.0-dev-v47: renovar el JWT antes de caducar; sin red se conserva la sesión local y el trabajo offline. */
  /* V6.0-dev-v48: la cabecera muestra usuario y conectividad del navegador, separado del estado de sincronización. */
  /* V6.0-dev-v49: la cabecera compacta representa autenticación y sincronización mediante iconos y estados de color. */
+ /* V6.0-dev-v50: sincronización e instalación usan una fila secundaria para reservar espacio al usuario y al cierre de sesión. */
  window.NexumAuthSession.refresh=refresh;
  window.setInterval(()=>{if(!document.hidden&&navigator.onLine!==false&&get())refresh().then(paint);},60000);
  window.addEventListener("online",()=>{if(get())refresh().then(paint);else paint();});
