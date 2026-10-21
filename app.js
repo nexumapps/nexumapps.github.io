@@ -1,4 +1,4 @@
-const APP_VERSION="6.0-dev-v41";
+const APP_VERSION="6.0-dev-v42";
 // V6.0-dev-v38: confirmar contraseña inicial y revelar/ocultar contraseñas; publicar al elegir conservar local y señalizar errores/éxitos con iconos.
 const KEY="taller_electronica_v5";
 const ECON_CONFIG_KEY="taller_electronica_economia_config";
