@@ -1,4 +1,5 @@
-const APP_VERSION="6.0-dev-v52";
+const APP_VERSION="6.0-dev-v53";
+// V6.0-dev-v53: aumentar ligeramente el logo y la tipografía de la marca y del usuario; conservar intacto el tamaño de los botones.
 // V6.0-dev-v52: restaurar el texto completo «Gestión del Taller» y mostrar la versión en una segunda línea bajo el logo.
 // V6.0-dev-v38: confirmar contraseña inicial y revelar/ocultar contraseñas; publicar al elegir conservar local y señalizar errores/éxitos con iconos.
 const KEY="taller_electronica_v5";
