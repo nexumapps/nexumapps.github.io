@@ -1,3 +1,8 @@
+## V6.0-dev-v51 — versión bajo el logotipo
+- La etiqueta visible `V6.0-dev-v51` pasa debajo del logo y se alinea a la izquierda en tamaño discreto.
+- Se conservan los controles de identidad de usuario y cierre de sesión en la cabecera, y sincronizar/instalar en la fila inferior.
+- No se modifica lógica funcional, almacenamiento ni esquema Supabase. Pendiente comprobación visual en navegador/PWA.
+
 ## V6.0-dev-v50 — herramientas debajo de la cabecera
 - Sincronizar e instalar pasan a una fila inferior compacta para evitar que compriman la identidad de usuario y el botón de cerrar sesión.
 - Se mantienen los IDs y los controladores existentes: el botón de sincronización sigue abriendo el mismo panel y «Sincronizar ahora» conserva su acción.
