@@ -1,3 +1,7 @@
+## V6.0-dev-v34 — indicadores visibles en el aviso emergente
+- Se muestran etiquetas explícitas «✅ TODO CORRECTO» o «❌ ERROR / REVISIÓN» en el resumen emergente, además de los símbolos de estado.
+- Se incrementa la clave de caché de la PWA para forzar que los dispositivos descarguen el archivo actualizado.
+
 ## V6.0-dev-v33 — resolución de conflictos en una sola acción
 - «Conservar versión local» prepara una operación nueva con la versión remota actual como base y ejecuta la sincronización inmediatamente; no requiere un segundo reintento manual.
 - Para colisiones de identificadores se reutiliza la resolución específica existente; si no puede hacerse con seguridad, se informa claramente y se conservan los datos locales.
