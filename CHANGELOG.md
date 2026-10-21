@@ -1,3 +1,8 @@
+## V6.0-dev-v52 — texto completo bajo el logo
+- Se conserva la posición de la etiqueta bajo el logo y se restaura el texto en dos líneas: «Gestión del Taller» y «V6-dev52».
+- La versión interna, el título de la página, la referencia de estilos y la caché PWA se alinean en v52.
+- Cambio visual solamente; no se altera autenticación, sincronización ni datos. Pendiente comprobación visual en la PWA.
+
 ## V6.0-dev-v51 — versión debajo del logo
 - Se coloca la etiqueta de versión en una línea discreta debajo del logotipo, alineada a la izquierda.
 - Se mantiene la identidad del usuario, el indicador de sesión y el botón de cerrar sesión a la derecha; sincronización e instalación siguen en la fila inferior.
