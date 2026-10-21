@@ -1,3 +1,8 @@
+## V6.0-dev-v43
+- Consola administrativa: los mensajes de éxito y error de acciones como crear usuario, cambiar estados, revocar acceso global y gestionar membresías quedan junto a la acción que los originó.
+- La actualización de las listas ya no sobrescribe el mensaje de «Comprobar acceso administrativo»; ese mensaje solo se actualiza cuando se comprueba el acceso.
+- Se alinea la versión visible, `app.js`, `version.txt` y la caché de la PWA. No se modifican datos ni credenciales existentes.
+
 ## V6.0-dev-v42
 - Alta de usuarios: la protección de campos de seguridad ahora permite cambios del backend confiable `service_role` (además de roles administrativos de base de datos), manteniendo bloqueados esos cambios para usuarios normales. Esto permite asignar el rol técnico y el estado inicial después de que el trigger crea el perfil.
 - Se corrige la etiqueta de versión que seguía mostrando v37 en `index.html`; se alinean versión visible, `version.txt`, JavaScript y caché PWA.
