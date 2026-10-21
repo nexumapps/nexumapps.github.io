@@ -1,3 +1,8 @@
+
+## V6.0-dev-v40
+- Panel administrativo: añade eliminación permanente de usuarios con confirmación explícita, protección contra autoeliminación y protección de cuentas con registro de administrador global.
+- El backend retira membresías del usuario antes de eliminar la cuenta de autenticación; si falla la eliminación, intenta restaurar las membresías. Se conserva el registro de auditoría y no se toca el histórico de tickets/movimientos.
+- Errores de eliminación aparecen junto a la acción que los provocó.
 ## V6.0-dev-v39 — errores junto a la acción y diagnóstico de alta
 - Los errores de formularios administrativos se muestran dentro del formulario que los generó; los errores de botones de usuario/taller/membresía aparecen junto a la acción correspondiente.
 - El alta de usuarios devuelve el código y mensaje de base de datos al fallar la creación del perfil, sin exponer contraseñas ni tokens.
