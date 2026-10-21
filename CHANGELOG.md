@@ -1,3 +1,9 @@
+## V6.0-dev-v20 — sincronización completa en una pulsación
+- La acción de sincronizar coordina hasta cuatro ciclos de envío y recepción en una sola ejecución, con parada tras dos ciclos tranquilos consecutivos.
+- Se muestra un único resumen final; se elimina la confirmación repetitiva antes de enviar la cola pendiente.
+- Los conflictos y cambios que requieren revisión detienen el ciclo y se conservan para resolución manual; no se fuerza la aplicación de snapshots inseguros.
+- Se actualizan la versión visible, version.txt y la caché de la PWA. No se borran ni reinician datos locales.
+
 ## V6.0-dev-v19 — procesar la bandeja ya recibida
 - La sincronización también procesa los cambios seguros que ya estaban guardados en la bandeja local de revisiones, aunque el cursor del servidor ya haya avanzado.
 - Las entradas marcadas para revisión no se aplican automáticamente; se vuelven a comprobar las operaciones locales pendientes antes de cada aplicación.
