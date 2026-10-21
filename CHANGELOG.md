@@ -1,3 +1,8 @@
+## V6.0-dev-v46 — recarga completa tras iniciar sesión
+- Tras un inicio de sesión correcto, guarda primero la sesión y fuerza una recarga completa de la página para reconstruir menús, cola, permisos administrativos y estado de sincronización desde la sesión ya persistida.
+- No fuerza la recarga en cada renovación del token ni al cerrar sesión.
+- Se alinea la versión de la PWA y su caché. No se modifican datos del taller.
+
 ## V6.0-dev-v45 — asignación automática del taller por cuenta
 - La pantalla de sincronización deja de pedir el UUID y el nombre del dispositivo; el UUID permanece interno y el usuario normal solo ve el nombre del taller asignado por el servidor.
 - Se añade la RPC autenticada `nexum_get_my_workshops`, que devuelve únicamente las membresías activas de la cuenta autenticada y si tiene permiso de administración global.
