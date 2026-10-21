@@ -1,5 +1,5 @@
-const APP_VERSION="6.0-dev-v31";
-// V6.0-dev-v31: conservar versión local genera una operación nueva contra la versión remota y la publica inmediatamente.
+const APP_VERSION="6.0-dev-v32";
+// V6.0-dev-v32: resolver conflicto local crea una única operación nueva con la versión remota como base y espera su publicación.
 const KEY="taller_electronica_v5";
 const ECON_CONFIG_KEY="taller_electronica_economia_config";
 const SHARED_SETTINGS_KEY="nexum_shared_settings_v1";
@@ -518,7 +518,7 @@ const KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6
   }
   suppressSyncDiff=true;try{save()}finally{suppressSyncDiff=false;}
  }
- const inboxHost=$("syncInboxReview");if(inboxHost)inboxHost.addEventListener("click",e=>{
+ const inboxHost=$("syncInboxReview");if(inboxHost)inboxHost.addEventListener("click",async e=>{
   const b=e.target.closest("button");if(!b)return;
   const cursor=b.dataset.syncInboxApply??b.dataset.syncInboxDismiss??b.dataset.syncInboxRemote??b.dataset.syncInboxLocal;
   if(cursor!==undefined){
@@ -531,8 +531,22 @@ const KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6
    if(b.dataset.syncInboxLocal!==undefined){
     const remoteVersion=Number(ch.version??ch.record?.version??0);
     if(!confirm("Se conservará la versión local. Las operaciones pendientes de esta entidad se reintentarán usando como base la versión remota "+remoteVersion+". ¿Continuar?"))return;
-    let q=readOutbox().map(op=>{const match=(op.entityType===ch.entity_type&&op.entityId===ch.entity_id)||(isSharedRate&&op.entityType==="settings"&&op.legacyId==="exchange_rate");if(!match||!["pending","sending","conflict"].includes(op.status))return op;if(isSharedRate){let localRate;try{localRate=JSON.parse(localStorage.getItem(SHARED_SETTINGS_KEY)||"null")}catch{}if(localRate&&Number(localRate.rate)>0){localRate={...localRate,syncId:ch.entity_id,remoteVersion:remoteVersion,syncStatus:"pending"};localStorage.setItem(SHARED_SETTINGS_KEY,JSON.stringify(localRate));return {...op,operationId:core.uuid(),entityId:ch.entity_id,legacyId:"exchange_rate",payload:localRate,status:"pending",baseVersion:remoteVersion,remoteConflict:null,conflictType:null,conflictDetail:null,lastError:null,createdAt:new Date().toISOString()};}}return {...op,operationId:core.uuid(),status:"pending",baseVersion:remoteVersion,remoteConflict:null,conflictType:null,conflictDetail:null,lastError:null,createdAt:new Date().toISOString()};});
-    writeOutbox(q);writeInbox(inbox.filter(x=>String(x.cursor)!==String(cursor)));renderInbox();status("Publicando versión local","La versión elegida se está enviando a la nube.");run().catch(err=>{console.warn("No se pudo publicar la versión local elegida",err);});return;
+    const oldQueue=readOutbox();
+    const matches=op=>(op.entityType===ch.entity_type&&op.entityId===ch.entity_id)||(isSharedRate&&op.entityType==="settings"&&(op.legacyId==="exchange_rate"||op.payload?.settingKey==="exchange_rate"));
+    let localRecord=null,baseOp=oldQueue.find(op=>matches(op)&&["pending","sending","conflict"].includes(op.status));
+    if(isSharedRate){try{localRecord=JSON.parse(localStorage.getItem(SHARED_SETTINGS_KEY)||"null")}catch{}}
+    else localRecord=localSyncRecord(ch)||baseOp?.payload||null;
+    if(!localRecord||!localRecord.syncId){alert("No se encontró la versión local completa para publicar. No se ha eliminado ningún dato.");return;}
+    const canonicalId=String(ch.entity_id);
+    localRecord={...localRecord,syncId:canonicalId,remoteVersion:remoteVersion,syncStatus:"pending"};
+    if(isSharedRate){localRecord.settingKey="exchange_rate";localStorage.setItem(SHARED_SETTINGS_KEY,JSON.stringify(localRecord));}
+    const legacyId=isSharedRate?"exchange_rate":(baseOp?.legacyId||ch.record?.legacy_id||localRecord.ticketId||localRecord.id||null);
+    const newOperation=core.makeOperation({entityType:ch.entity_type,record:localRecord,action:"upsert",baseVersion:remoteVersion,payload:localRecord,legacyId});
+    let q=oldQueue.filter(op=>!(matches(op)&&["pending","sending","conflict"].includes(op.status)));
+    q.push(newOperation);writeOutbox(q);
+    writeInbox(inbox.filter(x=>String(x.cursor)!==String(cursor)));renderInbox();status("Publicando versión local","La versión elegida se enviará como la siguiente versión remota.");
+    try{await run();}catch(err){console.warn("No se pudo publicar la versión local elegida",err);alert("La versión local quedó guardada para reintento: "+(err.message||"error de sincronización"));}
+    return;
    }
    if(b.dataset.syncInboxApply!==undefined){
     if(ch.needsReview||pendingOps.length){alert("Este registro tiene cambios locales pendientes. Compara las versiones y resuelve el conflicto primero.");return;}
