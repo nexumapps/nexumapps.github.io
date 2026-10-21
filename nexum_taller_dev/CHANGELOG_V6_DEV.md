@@ -1,3 +1,8 @@
+## V6.0-dev-v52 — texto completo bajo el logo
+- Se corrige el bloque de marca para mostrar «Gestión del Taller» en la primera línea y «V6-dev52» debajo, manteniendo la posición aprobada por el usuario.
+- Se actualizan la versión interna, la etiqueta/título, version.txt, referencia de estilos y caché del service worker.
+- Sin cambios en lógica funcional, autenticación, sincronización, datos locales ni esquema Supabase. Pendiente prueba visual en navegador/PWA.
+
 ## V6.0-dev-v51 — versión bajo el logotipo
 - La etiqueta visible `V6.0-dev-v51` pasa debajo del logo y se alinea a la izquierda en tamaño discreto.
 - Se conservan los controles de identidad de usuario y cierre de sesión en la cabecera, y sincronizar/instalar en la fila inferior.
