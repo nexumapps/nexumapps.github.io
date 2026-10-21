@@ -1,3 +1,11 @@
+## V6.0-dev-v18 — aplicación segura de cambios remotos
+- La sincronización aplica automáticamente snapshots recibidos cuando no hay operaciones locales pendientes para esa entidad.
+- Los cambios que coinciden con operaciones locales pendientes o que no pueden aplicarse con seguridad quedan en la bandeja de revisión.
+- El resumen informa cambios recibidos, aplicados automáticamente y pendientes de revisión.
+- El estado de cuenta distingue entre sesión iniciada y taller configurado para evitar el mensaje engañoso de que no hay vinculación cuando el UUID ya está guardado.
+- Se conserva el enfoque local-first; la aplicación remota suprime la generación de nuevas operaciones de salida.
+- Se incrementa la caché PWA para distribuir el código actualizado.
+
 ## V6.0-dev-v17 — recuperación de estabilidad
 - Se recupera el archivo app.js de la versión estable V6.0-dev-v14 (posterior a la corrección de la clave pública de sincronización).
 - Se revierte temporalmente la aplicación automática de cambios remotos; se conserva el flujo de sincronización manual y la revisión explícita para reducir riesgos mientras se valida el intercambio entre dispositivos.
