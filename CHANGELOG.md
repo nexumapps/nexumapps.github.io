@@ -1,3 +1,8 @@
+## V6.0-dev-v16 — recuperación de arranque
+- Corregido el renderizado de la sección de revisión que contenía un error de sintaxis y bloqueaba la inicialización completa de la aplicación.
+- Incrementada la versión de caché de la PWA para que los dispositivos descarguen el JavaScript corregido.
+- La sección de revisión muestra un resumen legible de pendientes y conflictos; no modifica ni elimina los datos locales.
+
 # NEXUM Taller — registro de cambios
 
 ## V6.0-dev-v15 — sincronización entre dispositivos
