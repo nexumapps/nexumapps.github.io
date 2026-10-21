@@ -1,4 +1,5 @@
-const APP_VERSION="6.0-dev-v58";
+const APP_VERSION="6.0-dev-v59";
+// V6.0-dev-v59: los usuarios con varias membresías activas pueden cambiar el taller usado en este dispositivo; cada contexto local y su cola permanecen separados.
 // V6.0-dev-v58: la auditoría reciente se mantiene colapsada en un desplegable dentro de la consola ya protegida por autorización global del servidor.
 // V6.0-dev-v57: dirigir la recuperación a la ruta marcada reset_password y reconocer el token de recuperación sin depender de que el fragmento sea la única fuente de parámetros.
 // V6.0-dev-v56: retirar avisos de revisión obsoletos solo cuando no hay operaciones pendientes y el registro local ya confirma una versión igual o más reciente.
@@ -566,8 +567,33 @@ const KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6
   const legacy=legacyUnassignedSummary();
   if(info)info.textContent=(s?(c?.workshopId?"El taller se asigna desde tu cuenta; el identificador permanece interno.":"No hay un taller seleccionado para esta cuenta."):"Inicia sesión para consultar tu asignación.")+(legacy?" "+legacy:"");
   if(btn)btn.disabled=!s||!c?.workshopId||assignmentLoading||!!assignmentError;
+  // V59: selector de taller para cuentas normales con más de una membresía activa.
+  const switcher=$("memberWorkshopSwitcher"),switchSelect=$("memberWorkshopSelect"),switchBtn=$("memberWorkshopUseBtn");
+  const canSwitch=!!s&&workshopAssignment?.ok===true&&workshopAssignment.is_global_admin!==true&&memberships.length>1;
+  if(switcher)switcher.classList.toggle("hidden",!canSwitch);
+  if(canSwitch&&switchSelect){
+   const oldValue=switchSelect.value;
+   switchSelect.replaceChildren(new Option("Seleccionar taller",""));
+   for(const w of memberships)switchSelect.add(new Option(w.name,w.id));
+   switchSelect.value=memberships.some(w=>w.id===c?.workshopId)?c.workshopId:(memberships.some(w=>w.id===oldValue)?oldValue:"");
+   if(switchBtn)switchBtn.disabled=assignmentLoading||!!assignmentError||!switchSelect.value||switchSelect.value===c?.workshopId||!!window.NexumSyncBusy;
+  }
   renderInbox();
  }
+ const memberWorkshopUseBtn=$("memberWorkshopUseBtn");
+ if(memberWorkshopUseBtn)memberWorkshopUseBtn.addEventListener("click",()=>{
+  const s=session(),chosenId=$("memberWorkshopSelect")?.value;
+  const memberships=Array.isArray(workshopAssignment?.workshops)?workshopAssignment.workshops:[];
+  const chosen=memberships.find(w=>w.id===chosenId);
+  if(!s?.user?.id||!chosen||workshopAssignment?.is_global_admin===true)return;
+  if(window.NexumSyncBusy){status("Espera a que termine la sincronización antes de cambiar de taller.","No se modificó el taller seleccionado.");return;}
+  if(chosen.id===cfg()?.workshopId){status("Este taller ya está seleccionado.","No se cambió el contexto del dispositivo.");return;}
+  if(!confirm("¿Usar "+chosen.name+" en este dispositivo? Los datos locales y las operaciones pendientes de cada taller se mantienen separados."))return;
+  const old=cfg()||{};
+  contextStorage.setItem(CFG_KEY,JSON.stringify({workshopId:chosen.id,workshopName:chosen.name,deviceLabel:old.deviceLabel||defaultDeviceLabel(),userId:s.user.id}));
+  window.dispatchEvent(new Event("nexum-sync-config-changed"));
+  status("Taller cambiado en este dispositivo","Ahora está seleccionado "+chosen.name+". Los datos de los otros talleres permanecen separados.");
+ });
  function readInbox(){try{const x=JSON.parse(contextStorage.getItem("nexum_sync_inbox_v1")||"[]");return Array.isArray(x)?x:[]}catch{return []}}
  function writeInbox(items){contextStorage.setItem("nexum_sync_inbox_v1",JSON.stringify(items.slice(-2000)))}
  function localSyncRecord(ch){
