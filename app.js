@@ -1,5 +1,5 @@
-const APP_VERSION="6.0-dev-v28";
-// V6.0-dev-v28: las colisiones de legacy_id se detectan como conflictos recuperables; tickets/ECN se conservan con ID alternativo y la tasa se reancla a la identidad canónica.
+const APP_VERSION="6.0-dev-v29";
+// V6.0-dev-v29: respuestas de sincronización inesperadas quedan en revisión sin abortar el resto de operaciones independientes.
 const KEY="taller_electronica_v5";
 const ECON_CONFIG_KEY="taller_electronica_economia_config";
 const SHARED_SETTINGS_KEY="nexum_shared_settings_v1";
@@ -571,7 +571,16 @@ const KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6
      q=q.map(x=>x.operationId===op.operationId?{...x,status:"conflict",remoteConflict:result.current_record||null}:x);
      writeOutbox(q);continue;
     }
-    if(result.outcome!=="applied")throw Error("Respuesta de sincronización no reconocida.");
+    // V29: una respuesta inesperada es un conflicto recuperable de esta operación,
+    // no una razón para abortar el resto de la sincronización.
+    if(result?.outcome!=="applied"){
+     conflicts++;blockedEntities.add(op.entityType+":"+op.entityId);
+     const detail=result?.message||result?.error||result?.code||result?.outcome||"respuesta vacía o desconocida";
+     q=q.map(x=>x.operationId===op.operationId?{...x,status:"conflict",conflictType:"unexpected_response",conflictDetail:String(detail),remoteConflict:result?.current_record||x.remoteConflict||null}:x);
+     writeOutbox(q);
+     console.warn("Respuesta de sincronización pendiente de revisión",op.entityType,op.legacyId||op.entityId,result);
+     continue;
+    }
     q=core.acknowledge(q,op.operationId);
     if(Number.isInteger(Number(result.version))){
      q=q.map(x=>x.entityType===op.entityType&&x.entityId===op.entityId&&x.status==="pending"?{...x,baseVersion:Number(result.version)}:x);
