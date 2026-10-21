@@ -1,3 +1,11 @@
+## V6.0-dev-v45 — asignación automática del taller por cuenta
+- La pantalla de sincronización deja de pedir el UUID y el nombre del dispositivo; el UUID permanece interno y el usuario normal solo ve el nombre del taller asignado por el servidor.
+- Se añade la RPC autenticada `nexum_get_my_workshops`, que devuelve únicamente las membresías activas de la cuenta autenticada y si tiene permiso de administración global.
+- Al iniciar sesión, una cuenta normal se vincula automáticamente a su único taller activo; si no tiene una membresía válida, no queda habilitada la sincronización. Las cuentas con varias membresías no cambian arbitrariamente de taller.
+- Se conserva para administradores globales el flujo existente «Usar en este dispositivo» y se guarda también el nombre visible del taller seleccionado.
+- La membresía activa de `charliecs` fue verificada en el backend: NEXUM TWO(test). La asignación se obtendrá al iniciar sesión; no se cambian tickets ni movimientos remotos.
+- Los datos locales antiguos sin taller asignado continúan preservados y separados. Pruebas de navegador y sincronización de extremo a extremo pendientes.
+
 ## V6.0-dev-v44
 - Aísla tickets, equipos, movimientos, tasa/configuración económica, categorías, cola de salida, bandeja de entrada y cursor de sincronización por taller activo.
 - Aísla la base IndexedDB de fotografías por taller, evitando que el cambio de taller muestre fotos de otro contexto.
