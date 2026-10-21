@@ -1,3 +1,8 @@
+## V6.0-dev-v56 — limpieza segura de avisos de revisión ya resueltos
+- Se corrige la bandeja de revisión para retirar avisos antiguos cuando no quedan operaciones locales pendientes y el registro local confirma una versión remota igual o más reciente que la del aviso.
+- Los avisos con operaciones pendientes, versión desconocida o datos no confirmados se mantienen para revisión; no se eliminan ni modifican tickets por suposición.
+- Sin cambios en el formato de datos, en las decisiones de conflicto ni en la interfaz estética. Pendiente prueba real en dos dispositivos.
+
 ## V6.0-dev-v55 — separación sutil en la cabecera
 - Se añade una pequeña separación vertical entre la fila del usuario/cierre de sesión y los botones de sincronización/instalación.
 - Se conserva la barra compacta; el ajuste es de pocos píxeles y no cambia el tamaño de los botones ni su funcionamiento.
