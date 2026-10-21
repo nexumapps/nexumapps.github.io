@@ -1,3 +1,13 @@
+## V6.0-dev-v19 — procesar la bandeja ya recibida
+- La sincronización también procesa los cambios seguros que ya estaban guardados en la bandeja local de revisiones, aunque el cursor del servidor ya haya avanzado.
+- Las entradas marcadas para revisión no se aplican automáticamente; se vuelven a comprobar las operaciones locales pendientes antes de cada aplicación.
+- Se incrementa la caché PWA y se sincronizan las versiones visibles.
+
+## V6.0-dev-v19 — procesar la bandeja ya recibida
+- La sincronización también procesa los cambios seguros que ya estaban guardados en la bandeja local de revisiones, aunque el cursor del servidor ya haya avanzado.
+- Las entradas marcadas para revisión no se aplican automáticamente; se vuelven a comprobar las operaciones locales pendientes antes de cada aplicación.
+- Se incrementa la caché PWA y se sincronizan las versiones visibles.
+
 ## V6.0-dev-v18 — aplicación segura de cambios remotos
 - La sincronización aplica automáticamente snapshots recibidos cuando no hay operaciones locales pendientes para esa entidad.
 - Los cambios que coinciden con operaciones locales pendientes o que no pueden aplicarse con seguridad quedan en la bandeja de revisión.
