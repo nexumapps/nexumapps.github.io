@@ -1,3 +1,7 @@
+## V6.0-dev-v37 — contraseña temporal de 8 a 128 caracteres
+- El formulario de creación de usuarios acepta contraseñas temporales de 8–128 caracteres.
+- La función de administración de Supabase aplica el mismo rango, sin cambiar el requisito de cambiarla en el primer acceso.
+
 ## V6.0-dev-v36 — conservar el estado final
 - «Sincronización finalizada/completada» se clasifica como éxito verde, siempre que no haya errores ni conflictos.
 - La actualización del estado de sesión no reemplaza el resultado persistente de la última sincronización.
