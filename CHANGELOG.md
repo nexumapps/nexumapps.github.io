@@ -1,3 +1,9 @@
+## V6.0-dev-v49 — cabecera compacta e indicadores de estado
+- Se compacta la cabecera: logo y versión visibles a la izquierda; usuario con indicador de sesión/conectividad a la derecha.
+- Cerrar sesión, sincronización e instalación pasan a controles con iconos, etiquetas accesibles y títulos descriptivos.
+- El control de sincronización distingue estado normal (gris), finalización correcta (verde), conflicto (rojo) y error (naranja); el detalle textual permanece en el panel desplegable.
+- No se modifican tickets, movimientos, datos económicos, credenciales guardadas ni registros de Supabase. Pendiente validación visual en navegador/PWA.
+
 ## V6.0-dev-v48 — usuario y conectividad en la barra superior
 - Se muestra el nombre de usuario de la sesión autenticada junto a un indicador Online/Offline basado en la conectividad del navegador.
 - El nombre se conserva al renovar el token y se actualiza al cambiar la sesión; el indicador reacciona a los eventos de conexión/desconexión.
