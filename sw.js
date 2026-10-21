@@ -1,5 +1,5 @@
 /* NEXUM Taller PWA — cache de recursos estáticos y fallback de navegación offline. */
-const CACHE = 'nexum-v6.0-dev-v39-password-length';
+const CACHE = 'nexum-v40';
 const ASSETS = [
   './', './index.html', './styles.css', './app.js', './sync-core.js',
   './manifest.webmanifest', './logo-claro.svg', './logo-oscuro.svg',
@@ -15,7 +15,7 @@ self.addEventListener('install', event => {
 self.addEventListener('activate', event => {
   event.waitUntil((async () => {
     const keys = await caches.keys();
-    await Promise.all(keys.filter(key => key.startsWith('nexum-v6.0-') && key !== CACHE).map(key => caches.delete(key)));
+    await Promise.all(keys.filter(key => key.startsWith('nexum-v40') && key !== CACHE).map(key => caches.delete(key)));
     await self.clients.claim();
   })());
 });
