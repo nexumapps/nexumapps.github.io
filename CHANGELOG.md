@@ -1,3 +1,7 @@
+## V6.0-dev-v36 — conservar el estado final
+- «Sincronización finalizada/completada» se clasifica como éxito verde, siempre que no haya errores ni conflictos.
+- La actualización del estado de sesión no reemplaza el resultado persistente de la última sincronización.
+
 ## V6.0-dev-v35 — estado persistente del indicador de sincronización
 - El indicador superior conserva verde tras una sincronización completada sin conflictos ni revisión pendiente.
 - Rojo solo para errores o conflictos/revisiones reales; amarillo para sincronización en curso o cambios pendientes.
