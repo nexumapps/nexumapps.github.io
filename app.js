@@ -692,7 +692,7 @@ const KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6
   const s=session();
   if(!s?.user?.id){workshopAssignment=null;assignmentError="";assignmentLoading=false;assignmentUserId="";render();return;}
   const uid=s.user.id;
-  if(!force&&assignmentUserId===uid&&(workshopAssignment||assignmentError)){render();return;}
+  if(!force&&assignmentUserId===uid&&workshopAssignment&&!assignmentError){render();return;}
   if(assignmentPromise)return assignmentPromise;
   assignmentLoading=true;assignmentError="";render();
   assignmentPromise=(async()=>{
@@ -728,6 +728,7 @@ const KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6
     if(session()?.user?.id===uid){assignmentError=e.message||"No se pudo comprobar el taller.";assignmentUserId=uid;}
    }finally{
     assignmentLoading=false;assignmentPromise=null;render();
+    if(session()?.user?.id&&session().user.id!==uid)refreshWorkshopAssignment(true);
    }
   })();
   return assignmentPromise;
@@ -879,7 +880,7 @@ const KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6
   }finally{window.NexumSyncBusy=false;if(btn)btn.disabled=false;render();window.dispatchEvent(new Event("nexum-sync-idle"));}
  }
  const syncBtn=$("syncNowBtn");if(syncBtn)syncBtn.onclick=run;
- window.addEventListener("storage",e=>{if([SESSION_KEY,CFG_KEY,OUTBOX].includes(e.key)){render();if(e.key===SESSION_KEY)refreshWorkshopAssignment(true);}});window.addEventListener("nexum-sync-config-changed",render);window.addEventListener("nexum-sync-auth-changed",()=>refreshWorkshopAssignment(true));window.addEventListener("focus",()=>refreshWorkshopAssignment(false));render();refreshWorkshopAssignment(true);
+ window.addEventListener("storage",e=>{if([SESSION_KEY,CFG_KEY,OUTBOX].includes(e.key)){render();if(e.key===SESSION_KEY)refreshWorkshopAssignment(true);}});window.addEventListener("nexum-sync-config-changed",render);window.addEventListener("nexum-sync-auth-changed",()=>refreshWorkshopAssignment(true));window.addEventListener("focus",()=>refreshWorkshopAssignment(true));window.addEventListener("nexum-sync-idle",()=>{if(assignmentError)refreshWorkshopAssignment(true);});render();refreshWorkshopAssignment(true);
 })();
 
 /* V6.0-dev-v41 — ojo clásico dentro del campo, con SVG abierto/cerrado y sin botón lateral. */
