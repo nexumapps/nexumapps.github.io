@@ -1,5 +1,5 @@
-const APP_VERSION="6.0-dev-v21";
-// V6.0-dev-v21: coordina ciclos de envío/recepción en una pulsación; los conflictos y cambios inseguros siguen en revisión.
+const APP_VERSION="6.0-dev-v22";
+// V6.0-dev-v22: coordina ciclos de envío/recepción en una pulsación; los conflictos y cambios inseguros siguen en revisión.
 const KEY="taller_electronica_v5";
 const ECON_CONFIG_KEY="taller_electronica_economia_config";
 const OLD_KEYS=["taller_electronica_v4","taller_electronica_v3","taller_electronica_v2","taller_electronica_v1"];
@@ -533,14 +533,14 @@ const KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6
  window.addEventListener("storage",e=>{if([SESSION_KEY,CFG_KEY,OUTBOX].includes(e.key))render();});window.addEventListener("nexum-sync-config-changed",render);window.addEventListener("nexum-sync-auth-changed",render);window.addEventListener("focus",render);render();
 })();
 
-/* V6.0-dev-v21 — acceso protegido, persistencia opcional y recuperación por usuario/correo. */
+/* V6.0-dev-v22 — acceso protegido, persistencia opcional y recuperación por usuario/correo. */
 (function initCloudAccountLogin(){
  const URL="https://ywcrowviufbioeqixwrq.supabase.co",PUBLIC_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ5d2Nyb3Z2aXdmaW9lcWl4d3JxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEyNjIwMzAsImV4cCI6MjEwNjgzODAzMH0.Mh9BHpigCVQ8Q624_M1o495A5JwTRL0M7q7yF5g5RQE";
  const K="nexum_v6_auth_session",$=id=>document.getElementById(id),form=$("cloudLoginForm"),id=$("cloudIdentifier"),pw=$("cloudPassword"),login=$("cloudLoginBtn"),logout=$("cloudLogoutBtn"),state=$("cloudAccountState"),msg=$("cloudLoginMessage"),remember=$("cloudRememberLogin"),gate=$("loginGate"),gateContent=$("loginGateContent"),account=$("cloudAccountCard"),recovery=$("cloudRecoveryPanel"),recoverForm=$("cloudRecoveryForm"),recoverId=$("cloudRecoveryIdentifier"),recoverMsg=$("cloudRecoveryMessage"),recoverBtn=$("cloudRecoveryBtn"),recoverBack=$("cloudRecoveryBack"),reset=$("cloudPasswordResetPanel"),resetBtn=$("cloudPasswordResetBtn"),switchBtn=$("accountSwitchBtn"),logoutTop=$("accountLogoutBtn");
  if(!form||!gate||!account)return;
  const valid=s=>!!(s?.access_token&&s?.refresh_token&&s?.user),readFrom=store=>{try{const s=JSON.parse(store.getItem(K)||"null");return valid(s)?s:null}catch{return null}},get=()=>readFrom(sessionStorage)||readFrom(localStorage);
  const emit=()=>{window.dispatchEvent(new Event("nexum-auth-session-changed"));window.dispatchEvent(new Event("nexum-sync-auth-changed"));},save=(s,keep=!!remember?.checked)=>{localStorage.removeItem(K);sessionStorage.removeItem(K);(keep?localStorage:sessionStorage).setItem(K,JSON.stringify(s));emit();},clear=()=>{localStorage.removeItem(K);sessionStorage.removeItem(K);emit();};
- window.NexumAuthSession={get,save,clear};if(localStorage.getItem(K)&&remember)remember.checked=true;gateContent.appendChild(account);
+ window.NexumAuthSession={get,save,clear};emit();if(localStorage.getItem(K)&&remember)remember.checked=true;gateContent.appendChild(account);
  const recoveryLink=()=>{const p=new URLSearchParams(location.hash.slice(1));return p.get("type")==="recovery"&&!!p.get("access_token");},status=(label,detail)=>{const a=$("syncStatusLabel"),b=$("syncStatusDetailTitle"),c=document.querySelector("#syncStatusPanel p:nth-of-type(2)");if(a)a.textContent=label;if(b)b.textContent=label;if(c)c.textContent=detail;},showGate=on=>{document.body.classList.toggle("auth-locked",on);gate.classList.toggle("hidden",!on);if(switchBtn)switchBtn.classList.toggle("hidden",on);if(logoutTop)logoutTop.classList.toggle("hidden",on);};
  const paint=()=>{const recoveryMode=recoveryLink(),s=recoveryMode?null:get();showGate(!s);if(recoveryMode){account.classList.add("hidden");reset?.classList.remove("hidden");recovery?.classList.add("hidden");}else{account.classList.remove("hidden");reset?.classList.add("hidden");}if(s){state.textContent="Sesión iniciada: "+(s.user.user_metadata?.display_name||s.user.email||s.user.id)+".";login.classList.add("hidden");logout.classList.remove("hidden");id.disabled=true;pw.disabled=true;let c=null;try{c=JSON.parse(localStorage.getItem("nexum_sync_config_v1")||"null")}catch{}status(c?.workshopId?"Sesión iniciada · taller configurado":"Sesión iniciada · taller pendiente",c?.workshopId?"Taller configurado; el dispositivo se verifica al sincronizar.":"Falta configurar el ID del taller.");}else{state.textContent="Inicia sesión para acceder al taller.";login.classList.remove("hidden");logout.classList.add("hidden");id.disabled=false;pw.disabled=false;status("Sesión no iniciada","El contenido del taller está oculto hasta confirmar la sesión.");}};
  let refreshing=null,forcePasswordChange=false;
