@@ -1,3 +1,9 @@
+## V6.0-dev-v50 — herramientas debajo de la cabecera
+- Sincronizar e instalar pasan a una fila inferior compacta para evitar que compriman la identidad de usuario y el botón de cerrar sesión.
+- Se mantienen los IDs y los controladores existentes: el botón de sincronización sigue abriendo el mismo panel y «Sincronizar ahora» conserva su acción.
+- El evento beforeinstallprompt ya no reemplaza el SVG por texto; actualiza el título accesible del botón.
+- Sin cambios en registros ni en esquema Supabase. Pendiente validación visual y funcional en navegador/PWA.
+
 ## V6.0-dev-v49 — cabecera compacta y estados por color
 - Se reduce el texto de la barra superior y se usan iconos SVG para cerrar sesión, abrir opciones de sincronización e instalar la PWA.
 - El usuario permanece visible con un indicador verde para sesión activa, gris sin conexión y rojo para problema de sesión; la etiqueta tiene descripción accesible.
