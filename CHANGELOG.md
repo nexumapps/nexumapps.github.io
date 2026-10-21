@@ -1,3 +1,8 @@
+## V6.0-dev-v48 — usuario y conectividad en la barra superior
+- Se muestra el nombre de usuario de la sesión autenticada junto a un indicador Online/Offline basado en la conectividad del navegador.
+- El nombre se conserva al renovar el token y se actualiza al cambiar la sesión; el indicador reacciona a los eventos de conexión/desconexión.
+- El estado de red se mantiene separado del estado de sincronización. No se modifican tickets, movimientos, membresías ni datos remotos.
+
 ## V6.0-dev-v47 — sesión persistente y renovación para uso offline
 - La sesión autenticada se renueva automáticamente mientras la aplicación está abierta, antes de que venza el token de acceso; al volver a tener conexión también intenta renovarla.
 - Si el dispositivo está sin conexión, no intenta renovar contra el servidor ni borra la sesión guardada: los datos locales y el trabajo offline permanecen disponibles. La sincronización remota sigue requiriendo Internet.
