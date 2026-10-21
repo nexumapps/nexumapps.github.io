@@ -1,5 +1,5 @@
-const APP_VERSION="6.0-dev-v34";
-// V6.0-dev-v34: publicar al elegir conservar local y señalizar errores/éxitos con iconos.
+const APP_VERSION="6.0-dev-v35";
+// V6.0-dev-v35: publicar al elegir conservar local y señalizar errores/éxitos con iconos.
 const KEY="taller_electronica_v5";
 const ECON_CONFIG_KEY="taller_electronica_economia_config";
 const SHARED_SETTINGS_KEY="nexum_shared_settings_v1";
@@ -465,7 +465,7 @@ const KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6
  const cfg=()=>{try{return JSON.parse(localStorage.getItem(CFG_KEY)||"null")}catch{return null}};
  const readOutbox=()=>{try{const x=JSON.parse(localStorage.getItem(OUTBOX)||"[]");return Array.isArray(x)?x:[]}catch{return []}};
  const writeOutbox=x=>localStorage.setItem(OUTBOX,JSON.stringify(x));
- const status=(title,detail)=>{let t=String(title||""),d=String(detail||"");if(!/^[🟢🔴🟡⚠️]/u.test(t)){if(/error|no se pudo|falló|fallo|conflicto|revisión necesaria|pendiente/i.test(t+" "+d))t="🔴 "+t;else if(/completad|resuelto|resuelta|publicad|guardad|aplicad|sincronización terminada/i.test(t+" "+d))t="🟢 "+t;}const a=$("syncStatusLabel"),b=$("syncStatusDetailTitle"),c=$("syncStatusDetail");if(a)a.textContent=t;if(b)b.textContent=t;if(c)c.textContent=d;const line=$("syncNetworkLine");if(line)line.textContent=d;};
+ const status=(title,detail)=>{let t=String(title||""),d=String(detail||"");const dot=$("syncStatusBtn")?.querySelector(".sync-status-dot"),btn=$("syncStatusBtn");const bad=/error|no se pudo|falló|fallo|revisión necesaria/i.test(t)||/(?:conflictos|para revisar):\s*[1-9]\d*/i.test(d);const pending=/(?:pendientes):\s*[1-9]\d*/i.test(d)||/cambios pendientes/i.test(t);const running=/sincronizando|publicando versión local/i.test(t);const state=bad?"error":pending?"pending":running?"running":/completad|resuelt|publicad|guardad|aplicad|todo correcto/i.test(t)?"ok":"neutral";const prefix=state==="error"?"🔴 ":state==="pending"||state==="running"?"🟡 ":state==="ok"?"🟢 ":"";t=t.replace(/^[🟢🔴🟡⚠️❌✅]+\s*/u,"");if(dot)dot.style.background=state==="error"?"#e53935":state==="ok"?"#2eaf62":state==="pending"||state==="running"?"#f2c66d":"#9aa4af";if(dot)dot.style.boxShadow=state==="error"?"0 0 0 3px rgba(229,57,53,.2)":state==="ok"?"0 0 0 3px rgba(46,175,98,.2)":state==="pending"||state==="running"?"0 0 0 3px rgba(242,198,109,.2)":"none";if(btn)btn.dataset.syncState=state;const a=$("syncStatusLabel"),b=$("syncStatusDetailTitle"),c=$("syncStatusDetail");if(a)a.textContent=prefix+t;if(b)b.textContent=prefix+t;if(c)c.textContent=d;const line=$("syncNetworkLine");if(line)line.textContent=d;};
  function render(){const c=cfg(),s=session(),btn=$("syncNowBtn"),info=$("syncConfigInfo"),wid=$("syncWorkshopId"),label=$("syncDeviceLabel");if(wid&&c)wid.value=c.workshopId||"";if(label&&c)label.value=c.deviceLabel||"";if(info)info.textContent=s?(c?.workshopId?"Cuenta iniciada. Taller configurado; el dispositivo se registra al conectar.":"Sesión iniciada, pero falta el ID de taller asignado por el administrador."):"Inicia sesión antes de sincronizar.";if(btn)btn.disabled=!s||!c?.workshopId;renderInbox();}
  function readInbox(){try{const x=JSON.parse(localStorage.getItem("nexum_sync_inbox_v1")||"[]");return Array.isArray(x)?x:[]}catch{return []}}
  function writeInbox(items){localStorage.setItem("nexum_sync_inbox_v1",JSON.stringify(items.slice(-2000)))}
