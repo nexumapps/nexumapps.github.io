@@ -1,4 +1,5 @@
-const APP_VERSION="6.0-dev-v55";
+const APP_VERSION="6.0-dev-v56";
+// V6.0-dev-v56: retirar avisos de revisión obsoletos solo cuando no hay operaciones pendientes y el registro local ya confirma una versión igual o más reciente.
 // V6.0-dev-v55: aumentar ligeramente el logo y la tipografía de la marca y del usuario; conservar intacto el tamaño de los botones.
 // V6.0-dev-v52: restaurar el texto completo «Gestión del Taller» y mostrar la versión en una segunda línea bajo el logo.
 // V6.0-dev-v38: confirmar contraseña inicial y revelar/ocultar contraseñas; publicar al elegir conservar local y señalizar errores/éxitos con iconos.
@@ -582,7 +583,23 @@ const KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6
  }
  function renderInbox(){
   const host=$("syncInboxReview");if(!host)return;
-  const inbox=readInbox().slice().reverse().slice(0,50),conflicts=readOutbox().filter(x=>x.status==="conflict");
+  // V56: un conflicto ya resuelto puede dejar su aviso antiguo en la bandeja.
+  // Solo se archiva automáticamente si no hay operaciones pendientes y la versión local
+  // confirma que ya se alcanzó o superó la versión del aviso. Los casos inciertos se conservan.
+  const storedInbox=readInbox(),queued=readOutbox();
+  const cleanedInbox=storedInbox.filter(ch=>{
+   if(ch.needsReview!==true)return true;
+   const remote=ch.record?.payload||{};
+   const hasPending=queued.some(op=>(
+    op.entityType===ch.entity_type&&op.entityId===ch.entity_id||
+    ch.entity_type==="settings"&&remote.settingKey==="exchange_rate"&&op.entityType==="settings"&&op.legacyId==="exchange_rate"
+   )&&["pending","sending","conflict"].includes(op.status));
+   if(hasPending)return true;
+   const local=localSyncRecord(ch),incomingVersion=Number(ch.version??ch.record?.version??0),localVersion=Number(local?.remoteVersion||0);
+   return !(local&&incomingVersion>0&&localVersion>=incomingVersion);
+  });
+  if(cleanedInbox.length!==storedInbox.length)writeInbox(cleanedInbox);
+  const inbox=cleanedInbox.slice().reverse().slice(0,50),conflicts=readOutbox().filter(x=>x.status==="conflict");
   if(!inbox.length&&!conflicts.length){host.innerHTML='<p class="field-help">No hay cambios remotos pendientes de revisión.</p>';return;}
   const conflictHtml=conflicts.map(op=>{
    const remote=op.remoteConflict||{},local=op.payload||{},remotePayload=remote.payload||{};
