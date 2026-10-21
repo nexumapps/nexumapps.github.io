@@ -1,3 +1,10 @@
+## V6.0-dev-v45 — asignación del taller desde la cuenta
+- La pantalla de vinculación ya no solicita UUID ni permite que un usuario normal cambie de taller.
+- La aplicación consulta `nexum_get_my_workshops()` con la sesión autenticada y usa la membresía activa como fuente de verdad.
+- Las cuentas normales con una membresía activa se vinculan automáticamente; los administradores globales conservan el selector «Usar en este dispositivo».
+- La RPC se aplicó al proyecto Supabase NEXUM-app. La membresía de charliecs fue verificada en NEXUM TWO(test).
+- No se importan ni eliminan datos locales históricos. Validación E2E pendiente.
+
 # Registro de desarrollo — NEXUM Taller 6.0
 
 ## Iteración de sincronización local 0.2 (2026-10-10)
