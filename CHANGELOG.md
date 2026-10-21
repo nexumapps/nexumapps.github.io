@@ -1,3 +1,7 @@
+## V6.0-dev-v25 — confirmación de versión de tasa sincronizada
+- Corrige la actualización local de la versión remota de la tasa de cambio después de que Supabase confirma su envío, para evitar que el siguiente cambio reutilice una versión obsoleta.
+- Actualiza la versión de la hoja de estilos para invalidar la copia anterior en el navegador.
+
 ## V6.0-dev-v24 — sincronización de tasa monetaria y acceso
 - La tasa de cambio guardada en Configuración se registra como entidad compartida y se sincroniza mediante la cola existente; los demás dispositivos aplican el valor remoto.
 - Se corrige el salto de línea literal antes del contenido principal y se elimina el botón redundante «Cambiar cuenta»; «Cerrar sesión» permite iniciar otra cuenta.
