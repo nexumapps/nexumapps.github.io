@@ -212,3 +212,6 @@ html body.auth-locked > header.topbar,html body.auth-locked > nav.tabs,html body
 .topbar-tools .sync-status,.topbar-tools .icon-action{width:34px;height:32px;min-width:34px;padding:5px;border-radius:8px}
 .topbar-tools .sync-status-icon,.topbar-tools .icon-action svg{width:18px;height:18px}
 @media(max-width:600px){.topbar-tools{padding:3px 10px 7px;gap:6px}.topbar-tools .sync-status,.topbar-tools .icon-action{width:32px;height:30px;min-width:32px;padding:4px}}
+
+/* V6.0-dev-v51: versión debajo del logo para despejar la cabecera. */
+.brand{flex-direction:column;align-items:flex-start;justify-content:center;gap:0}.brand img{object-position:left center}.brand p{margin:1px 0 0;max-width:none;white-space:nowrap;font-size:9px;line-height:1.1;opacity:.72}
