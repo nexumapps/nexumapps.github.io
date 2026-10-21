@@ -1,3 +1,8 @@
+## V6.0-dev-v24 — sincronización de tasa monetaria y acceso
+- La tasa de cambio guardada en Configuración se registra como entidad compartida y se sincroniza mediante la cola existente; los demás dispositivos aplican el valor remoto.
+- Se corrige el salto de línea literal antes del contenido principal y se elimina el botón redundante «Cambiar cuenta»; «Cerrar sesión» permite iniciar otra cuenta.
+- Se alinean la versión de la aplicación, la página, version.txt y la caché de la PWA.
+
 ## V6.0-dev-v23 — corrección visual de la pantalla de acceso
 - Corrige el salto de línea literal que aparecía entre el acceso y la aplicación.
 - Fuerza las reglas de bloqueo de contenido y visibilidad del formulario de acceso, y limita el tamaño del logotipo en móvil.
