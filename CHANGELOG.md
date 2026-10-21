@@ -1,3 +1,8 @@
+## V6.0-dev-v23 — corrección visual de la pantalla de acceso
+- Corrige el salto de línea literal que aparecía entre el acceso y la aplicación.
+- Fuerza las reglas de bloqueo de contenido y visibilidad del formulario de acceso, y limita el tamaño del logotipo en móvil.
+- Versiona la hoja de estilos en la URL para evitar que el navegador reutilice una copia antigua de la PWA.
+
 ## V6.0-dev-v22 — inicialización de sesión para sincronización
 - Corrige la actualización inicial del estado de sincronización cuando una sesión temporal se recupera desde sessionStorage al recargar la PWA.
 - La pantalla de acceso, la persistencia opcional y la recuperación por usuario/correo de V21 se mantienen.
