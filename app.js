@@ -496,7 +496,39 @@ const KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6
   cursor=Number(r.next_cursor||cursor);localStorage.setItem(CURSOR_KEY,String(cursor));if(!r.has_more)break;
  }
  localStorage.setItem("nexum_sync_inbox_v1",JSON.stringify(inbox.slice(-2000)));renderInbox();return {received,applied,review};}
- async function run(){const s=session(),c=cfg();if(!s)throw Error("Inicia sesión primero.");if(!c?.workshopId||!/^[0-9a-f-]{36}$/i.test(c.workshopId))throw Error("Introduce el UUID del taller asignado por el administrador.");if(navigator.onLine===false)throw Error("No hay conexión. Las operaciones pendientes se conservaron.");const btn=$("syncNowBtn");if(btn)btn.disabled=true;status("Sincronizando…","Conectando con el taller autorizado.");try{const pendingBefore=readOutbox().filter(x=>x.status==="pending");if(pendingBefore.length){const sample=pendingBefore.slice(0,5).map(x=>`${x.entityType}:${x.legacyId||x.entityId}`).join("\n");if(!confirm(`Hay ${pendingBefore.length} operaciones pendientes que se enviarían al taller.\n\nPrimeras operaciones:\n${sample}${pendingBefore.length>5?"\n…":""}\n\nSi no esperabas enviar estos cambios o sospechas que incluyen histórico antiguo, cancela y revisa la cola antes de continuar. ¿Enviar ahora?`)){status("Sincronización cancelada","No se enviaron operaciones. Los datos y la cola local se conservaron.");return;}}const d=await ensureDevice(s,c);const pushed=await push(s,c,d);const pulled=await pull(s,c);const remaining=readOutbox().filter(x=>x.status==="pending").length;const finalTitle=pushed.conflicts||pulled.review?"Revisión necesaria":remaining?"Cambios pendientes":"Sincronización completada";status(finalTitle,`Enviadas: ${pushed.sent}; conflictos: ${pushed.conflicts}; pendientes: ${remaining}; cambios recibidos: ${pulled.received}; aplicados: ${pulled.applied}; para revisar: ${pulled.review}.`);alert(`Sincronización terminada.\nEnviadas: ${pushed.sent}\nConflictos: ${pushed.conflicts}\nPendientes: ${remaining}\nCambios recibidos: ${pulled.received}\nAplicados automáticamente: ${pulled.applied}\nPara revisar: ${pulled.review}`);}catch(e){status("Sincronización pendiente",e.message+" Los datos locales se conservaron.");alert("No se completó la sincronización: "+e.message+"\n\nLos datos locales siguen guardados y las operaciones se pueden reintentar.");}finally{if(btn)btn.disabled=false;render();}}
+ async function run(){
+  const s=session(),c=cfg();
+  if(!s)throw Error("Inicia sesión primero.");
+  if(!c?.workshopId||!/^[0-9a-f-]{36}$/i.test(c.workshopId))throw Error("Introduce el UUID del taller asignado por el administrador.");
+  if(navigator.onLine===false)throw Error("No hay conexión. Las operaciones pendientes se conservaron.");
+  const btn=$("syncNowBtn");if(btn)btn.disabled=true;
+  status("Sincronizando…","Enviando cambios, recibiendo novedades y aplicando automáticamente los cambios seguros.");
+  try{
+   const d=await ensureDevice(s,c);
+   let sent=0,conflicts=0,received=0,applied=0,review=0,quietCycles=0,cycles=0;
+   // V20: coordina varios ciclos en una sola pulsación para absorber cambios que se hagan visibles tras el primer envío.
+   // Dos ciclos tranquilos consecutivos confirman estabilidad; conflictos/revisiones nunca se fuerzan ni se sobrescriben.
+   for(let cycle=0;cycle<4;cycle++){
+    cycles++;
+    const pushed=await push(s,c,d);
+    sent+=pushed.sent;conflicts+=pushed.conflicts;
+    const pulled=await pull(s,c);
+    received+=pulled.received;applied+=pulled.applied;review+=pulled.review;
+    if(conflicts>0||review>0)break;
+    const quiet=pushed.sent===0&&pulled.received===0&&pulled.applied===0&&readOutbox().filter(x=>x.status==="pending").length===0;
+    quietCycles=quiet?quietCycles+1:0;
+    if(quietCycles>=2)break;
+   }
+   const remaining=readOutbox().filter(x=>x.status==="pending").length;
+   const finalTitle=conflicts||review?"Revisión necesaria":remaining?"Cambios pendientes":"Sincronización completada";
+   const summary=`Enviadas: ${sent}; conflictos: ${conflicts}; pendientes: ${remaining}; cambios recibidos: ${received}; aplicados: ${applied}; para revisar: ${review}.`;
+   status(finalTitle,summary);
+   alert(`Sincronización terminada.\n${summary}\nCiclos completados: ${cycles}${conflicts||review?"\nHay cambios que requieren revisión; no se sobrescribieron automáticamente.":""}`);
+  }catch(e){
+   status("Sincronización pendiente",e.message+" Los datos locales se conservaron.");
+   alert("No se completó la sincronización: "+e.message+"\n\nLos datos locales siguen guardados y las operaciones se pueden reintentar.");
+  }finally{if(btn)btn.disabled=false;render();}
+ }
  const saveBtn=$("saveSyncConfigBtn");if(saveBtn)saveBtn.onclick=()=>{const wid=$("syncWorkshopId").value.trim(),deviceLabel=$("syncDeviceLabel").value.trim();if(!/^[0-9a-f-]{36}$/i.test(wid)){alert("El ID del taller debe ser un UUID válido, proporcionado por el administrador.");return;}localStorage.setItem(CFG_KEY,JSON.stringify({workshopId:wid,deviceLabel}));render();};const syncBtn=$("syncNowBtn");if(syncBtn)syncBtn.onclick=run;
  window.addEventListener("storage",e=>{if([SESSION_KEY,CFG_KEY,OUTBOX].includes(e.key))render();});window.addEventListener("nexum-sync-config-changed",render);window.addEventListener("focus",render);render();
 })();
