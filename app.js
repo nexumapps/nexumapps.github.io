@@ -986,7 +986,7 @@ const KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6
     if(get()?.user?.id!==uid)return;
     if(username){profileUsername=username;profileUsernameUserId=uid;}
    }catch{/* La etiqueta usa un respaldo local si el perfil no está disponible. */}
-   finally{profileUsernamePromise=null;if(get()?.user?.id===uid)paint();}
+   finally{profileUsernamePromise=null;if(get())paint();}
   })();
   return profileUsernamePromise;
  }
