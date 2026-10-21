@@ -1,5 +1,5 @@
-const APP_VERSION="6.0-dev-v36";
-// V6.0-dev-v36: publicar al elegir conservar local y señalizar errores/éxitos con iconos.
+const APP_VERSION="6.0-dev-v37";
+// V6.0-dev-v37: publicar al elegir conservar local y señalizar errores/éxitos con iconos.
 const KEY="taller_electronica_v5";
 const ECON_CONFIG_KEY="taller_electronica_economia_config";
 const SHARED_SETTINGS_KEY="nexum_shared_settings_v1";
