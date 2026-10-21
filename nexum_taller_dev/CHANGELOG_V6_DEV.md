@@ -1,3 +1,8 @@
+## V6.0-dev-v57 — recuperación de contraseña con destino explícito
+- La solicitud de recuperación redirige a la aplicación con `?reset_password=1`.
+- El cliente reconoce el token de recuperación desde el fragmento o la consulta y solo abre el formulario si hay token y contexto de recuperación.
+- Se conserva la validación de contraseña y el cambio mediante el endpoint Auth de Supabase.
+
 ## V6.0-dev-v56 — limpieza segura de avisos de revisión ya resueltos
 - Se corrige la bandeja de revisión para retirar avisos antiguos cuando no quedan operaciones locales pendientes y el registro local confirma una versión remota igual o más reciente que la del aviso.
 - Los avisos con operaciones pendientes, versión desconocida o datos no confirmados se mantienen para revisión; no se eliminan ni modifican tickets por suposición.
