@@ -1,3 +1,8 @@
+## V6.0-dev-v30 — comparación antes de resolver conflictos
+- La revisión de sincronización muestra los campos diferentes entre la copia local y la remota; para la tasa, muestra explícitamente ambos valores CUP/USD.
+- Los cambios con operaciones locales pendientes ofrecen decisiones separadas: conservar la versión remota o conservar la local y reintentar con la versión remota como base.
+- Se conservan los datos de otras entidades y las tasas históricas individuales; se añade presentación adaptable a móviles.
+
 ## V6.0-dev-v29 — respuestas inesperadas recuperables
 - Una respuesta de sincronización no reconocida deja la operación afectada en conflicto/revisión, conserva el detalle y permite continuar con operaciones independientes.
 - Se mantiene la cola local; no se confirma una operación que el servidor no haya aceptado.
