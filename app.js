@@ -1,5 +1,5 @@
-const APP_VERSION="6.0-dev-v32";
-// V6.0-dev-v32: resolver conflicto local crea una única operación nueva con la versión remota como base y espera su publicación.
+const APP_VERSION="6.0-dev-v33";
+// V6.0-dev-v33: publicar al elegir conservar local y señalizar errores/éxitos con iconos.
 const KEY="taller_electronica_v5";
 const ECON_CONFIG_KEY="taller_electronica_economia_config";
 const SHARED_SETTINGS_KEY="nexum_shared_settings_v1";
@@ -465,7 +465,7 @@ const KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6
  const cfg=()=>{try{return JSON.parse(localStorage.getItem(CFG_KEY)||"null")}catch{return null}};
  const readOutbox=()=>{try{const x=JSON.parse(localStorage.getItem(OUTBOX)||"[]");return Array.isArray(x)?x:[]}catch{return []}};
  const writeOutbox=x=>localStorage.setItem(OUTBOX,JSON.stringify(x));
- const status=(title,detail)=>{const a=$("syncStatusLabel"),b=$("syncStatusDetailTitle"),c=$("syncStatusDetail");if(a)a.textContent=title;if(b)b.textContent=title;if(c)c.textContent=detail;const line=$("syncNetworkLine");if(line)line.textContent=detail;};
+ const status=(title,detail)=>{let t=String(title||""),d=String(detail||"");if(!/^[🟢🔴🟡⚠️]/u.test(t)){if(/error|no se pudo|falló|fallo|conflicto|revisión necesaria|pendiente/i.test(t+" "+d))t="🔴 "+t;else if(/completad|resuelto|resuelta|publicad|guardad|aplicad|sincronización terminada/i.test(t+" "+d))t="🟢 "+t;}const a=$("syncStatusLabel"),b=$("syncStatusDetailTitle"),c=$("syncStatusDetail");if(a)a.textContent=t;if(b)b.textContent=t;if(c)c.textContent=d;const line=$("syncNetworkLine");if(line)line.textContent=d;};
  function render(){const c=cfg(),s=session(),btn=$("syncNowBtn"),info=$("syncConfigInfo"),wid=$("syncWorkshopId"),label=$("syncDeviceLabel");if(wid&&c)wid.value=c.workshopId||"";if(label&&c)label.value=c.deviceLabel||"";if(info)info.textContent=s?(c?.workshopId?"Cuenta iniciada. Taller configurado; el dispositivo se registra al conectar.":"Sesión iniciada, pero falta el ID de taller asignado por el administrador."):"Inicia sesión antes de sincronizar.";if(btn)btn.disabled=!s||!c?.workshopId;renderInbox();}
  function readInbox(){try{const x=JSON.parse(localStorage.getItem("nexum_sync_inbox_v1")||"[]");return Array.isArray(x)?x:[]}catch{return []}}
  function writeInbox(items){localStorage.setItem("nexum_sync_inbox_v1",JSON.stringify(items.slice(-2000)))}
@@ -559,7 +559,37 @@ const KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6
   const mode=b.dataset.syncConflict,operationId=b.dataset.operation;if(!mode||!operationId)return;
   let q=readOutbox(),op=q.find(x=>x.operationId===operationId&&x.status==="conflict");if(!op)return;const remote=op.remoteConflict||{};
   if(mode==="remote"){if(!confirm("Se descartarán las operaciones locales pendientes de esta entidad y se aplicará la versión remota. ¿Continuar?"))return;try{applyRemoteSnapshot(op.entityType,op.entityId,remote.deleted_at?"delete":"upsert",remote.payload,remote.version);q=q.filter(x=>!(x.entityType===op.entityType&&x.entityId===op.entityId));writeOutbox(q);status("Conflicto resuelto","Se conservó la versión remota.");renderInbox();renderAll();}catch(err){alert(err.message||"No se pudo aplicar la versión remota.");}}
-  else{if(!confirm("Se conservará tu versión local y se enviará ahora a la nube usando la versión remota como base. ¿Continuar?"))return;const remoteVersion=Number(remote.version||0);q=q.map(x=>x.operationId===operationId?{...x,operationId:core.uuid(),status:"pending",baseVersion:remoteVersion,remoteConflict:null,conflictType:null,conflictDetail:null,lastError:null,createdAt:new Date().toISOString()}:x);writeOutbox(q);renderInbox();status("Publicando versión local","La versión elegida se está enviando a la nube.");run().catch(err=>{console.warn("No se pudo publicar la versión local elegida",err);});}
+  else{
+   if(!confirm("Se conservará la versión local y se intentará publicar ahora, usando la versión remota como base. ¿Continuar?"))return;
+   const remoteVersion=Number(remote.version||0);
+   try{
+    if(op.conflictType==="legacy_id"){
+     const resolved=resolveLegacyIdCollision(op,q,{current_record:remote});
+     if(!resolved?.retry)throw Error("No se pudo resolver automáticamente la colisión del identificador. Los datos locales se conservaron; revisa el detalle del conflicto.");
+     q=resolved.q;
+    }else{
+     const isRate=op.entityType==="settings"&&(op.legacyId==="exchange_rate"||op.payload?.settingKey==="exchange_rate");
+     let payload={...(op.payload||{})};
+     const entityId=String(remote.entity_id||op.entityId);
+     if(isRate){
+      let shared=null;try{shared=JSON.parse(localStorage.getItem(SHARED_SETTINGS_KEY)||"null")}catch{}
+      payload={...(shared||payload),syncId:entityId,settingKey:"exchange_rate",rate:Number((shared||payload).rate??currentRate()),remoteVersion:remoteVersion,syncStatus:"pending",entityType:"settings"};
+      localStorage.setItem(SHARED_SETTINGS_KEY,JSON.stringify(payload));
+     }else payload={...payload,syncId:entityId,remoteVersion:remoteVersion,syncStatus:"pending"};
+     const legacyId=isRate?"exchange_rate":(op.legacyId||payload.ticketId||payload.id||payload.equipoId||null);
+     const fresh=core.makeOperation({entityType:op.entityType,record:payload,action:op.action||"upsert",baseVersion:remoteVersion,payload:op.action==="delete"?null:payload,legacyId});
+     q=q.filter(x=>!(x.entityType===op.entityType&&(x.entityId===op.entityId||x.entityId===entityId)&&["pending","sending","conflict"].includes(x.status)));
+     q.push(fresh);writeOutbox(q);
+    }
+    renderInbox();status("🟢 Publicando versión local","La decisión se está enviando ahora; no hace falta un reintento manual.");
+    await run();
+   }catch(err){
+    console.warn("No se pudo publicar la versión local elegida",err);
+    status("🔴 No se pudo resolver el conflicto",err.message||"Los datos locales se conservaron.");
+    alert("🔴 No se pudo publicar la versión local: "+(err.message||"error de sincronización")+"\n\nLos datos locales se conservaron.");
+    renderInbox();
+   }
+  }
  });
  async function api(path,body,s){const res=await fetch(URL+path,{method:"POST",headers:{"Content-Type":"application/json","apikey":KEY,"Authorization":"Bearer "+s.access_token},body:JSON.stringify(body)});const data=await res.json().catch(()=>({}));if(!res.ok)throw new Error(data.message||data.error||data.details||("Servidor respondió "+res.status));return data;}
  async function ensureDevice(s,c){let d;try{d=JSON.parse(localStorage.getItem(DEVICE_KEY)||"null")}catch{}if(!d||d.workshopId!==c.workshopId||d.userId!==s.user.id){d={id:core.uuid(),workshopId:c.workshopId,userId:s.user.id};localStorage.setItem(DEVICE_KEY,JSON.stringify(d));}
