@@ -1,3 +1,8 @@
+## V6.0-dev-v38 — confirmación y visibilidad de contraseñas
+- El alta de usuarios exige confirmar la contraseña temporal antes de enviar la solicitud; valida coincidencia y longitud de 8–128 caracteres.
+- Se incorpora un control mostrar/ocultar en los campos de contraseña, incluidos los que aparecen dinámicamente (cambio inicial y recuperación).
+- No se modifican las credenciales ya creadas ni los datos locales/históricos.
+
 ## V6.0-dev-v37 — contraseña temporal de 8 a 128 caracteres
 - El formulario de creación de usuarios acepta contraseñas temporales de 8–128 caracteres.
 - La función de administración de Supabase aplica el mismo rango, sin cambiar el requisito de cambiarla en el primer acceso.
