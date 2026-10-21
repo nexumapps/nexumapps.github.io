@@ -1,3 +1,11 @@
+## V6.0-dev-v59 — selector de taller por dispositivo y entornos separados
+- Se añade a Configuración un selector para usuarios con varias membresías activas, con confirmación antes de cambiar el taller utilizado en este dispositivo.
+- El selector solo ofrece los talleres que el backend devuelve como membresías activas; el cambio actualiza el contexto local y conserva por separado tickets, movimientos, equipos, fotos y colas de sincronización de cada taller.
+- Se bloquea el cambio mientras hay una sincronización en curso. Los administradores globales conservan el flujo «Usar en este dispositivo» de la consola administrativa.
+- Se alinean APP_VERSION, etiqueta visible, título, referencia de estilos, version.txt y caché PWA en v59.
+- En Supabase, NEXUM ONE (entorno de pruebas anterior) pasa a NEXUM ZERO; se crea un NEXUM ONE limpio para el uso real; NEXUM TWO (Coming Soon) queda inactivo para evitar que se use antes de su lanzamiento.
+- Verificación estática del código y revisión de la configuración de talleres; pendiente prueba funcional en navegador con un usuario que tenga dos membresías activas.
+
 ## V6.0-dev-v58 — auditoría reciente plegable
 - La sección de auditoría queda dentro de un desplegable cerrado por defecto, reduciendo el espacio ocupado por la consola administrativa.
 - El contenido de auditoría solo aparece dentro de la consola que el servidor muestra tras confirmar permisos de administrador global; se conserva la carga y visualización de los eventos.
