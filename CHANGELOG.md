@@ -1,3 +1,10 @@
+## V6.0-dev-v33 — resolución de conflictos en una sola acción
+- «Conservar versión local» prepara una operación nueva con la versión remota actual como base y ejecuta la sincronización inmediatamente; no requiere un segundo reintento manual.
+- Para colisiones de identificadores se reutiliza la resolución específica existente; si no puede hacerse con seguridad, se informa claramente y se conservan los datos locales.
+- Los estados y errores de sincronización incorporan indicadores visuales: 🟢 para éxito y 🔴 para error, conflicto o revisión pendiente.
+- Se conserva el histórico y las tasas individuales de tickets/ECN; no se borran datos locales.
+- Se alinean app.js, index.html, version.txt y la caché de la PWA.
+
 ## V6.0-dev-v32 — confirmar y publicar la versión local elegida
 - La resolución local crea una sola operación nueva con la versión remota revisada como base, retirando solo las operaciones conflictivas previas de la misma entidad.
 - La acción espera la sincronización y muestra el resultado; no se limita a posponer el conflicto.
