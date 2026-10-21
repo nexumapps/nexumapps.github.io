@@ -158,8 +158,31 @@ html,body,.topbar,.tabs,.card,.stat,.statblock,.listwrap,.empty,.case,.dialogcar
 /* V5.6.29-beta — eje Y fijo durante el desplazamiento y fechas compactas con año por tramo. */
 
 
-/* V6.0 dev — indicador honesto de estado local; no implica sincronización remota. */
-.topbar-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}.account-identity-status{display:flex;align-items:center;gap:7px;min-width:0;color:#fff;font-size:12px;font-weight:700}.account-identity-name{max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.account-network-status{display:inline-flex;align-items:center;gap:5px;border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:5px 8px;font-size:11px}.account-network-status:before{content:"";width:7px;height:7px;border-radius:50%;background:#65d6a0}.account-network-status[data-online="false"]:before{background:#f2c66d}.sync-status{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.10);color:#fff;border:1px solid rgba(255,255,255,.35);padding:9px 11px;font-size:12px;font-weight:700;max-width:100%}.sync-status-dot{width:8px;height:8px;flex:0 0 8px;border-radius:50%;background:#f2c66d;box-shadow:0 0 0 2px rgba(242,198,109,.18)}.sync-status-panel{max-width:1100px;margin:10px auto;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,.08)}.sync-status-panel p{margin:8px 0;line-height:1.5}.sync-status-panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.sync-status-panel-head strong{font-size:15px}@media(max-width:600px){.topbar{padding:12px;gap:8px}.topbar-actions{gap:5px}.account-identity-status{gap:4px;font-size:11px}.account-identity-name{max-width:85px}.account-network-status{padding:4px 6px}.sync-status{padding:8px;font-size:11px}.sync-status-panel{margin:8px 10px}.brand img{width:min(155px,42vw)}}
+/* V6.0-dev-v49 — cabecera compacta, controles reconocibles por icono y estados por color. */
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px}
+.brand{display:flex;align-items:center;gap:9px;min-width:0}.brand img{width:clamp(84px,13vw,145px);max-height:40px;object-fit:contain}.brand p{margin:0;font-size:10px;line-height:1.25;opacity:.78;white-space:nowrap}
+.topbar-actions{display:flex;align-items:center;justify-content:flex-end;gap:7px;min-width:0;flex-wrap:nowrap}
+.account-identity-status{display:flex;align-items:center;gap:7px;min-width:0;color:#fff;font-size:12px;font-weight:750}
+.account-identity-name{max-width:145px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.account-status-dot{display:inline-block;width:10px;height:10px;flex:0 0 10px;border-radius:50%;background:#2eaf62;box-shadow:0 0 0 3px rgba(46,175,98,.17)}
+.account-status-dot[data-auth-state="offline"]{background:#9aa4af;box-shadow:0 0 0 3px rgba(154,164,175,.18)}
+.account-status-dot[data-auth-state="error"]{background:#e53935;box-shadow:0 0 0 3px rgba(229,57,53,.2)}
+.icon-action,.sync-status{display:inline-flex;align-items:center;justify-content:center;gap:6px;width:38px;height:38px;min-width:38px;padding:8px;border-radius:10px;border:1px solid rgba(255,255,255,.28);color:#fff;background:rgba(255,255,255,.09);cursor:pointer}
+.icon-action svg,.sync-status-icon{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.sync-status{position:relative;gap:4px}
+.sync-status-dot{width:7px;height:7px;position:absolute;right:3px;top:3px;border-radius:50%;background:#9aa4af;box-shadow:0 0 0 2px rgba(16,42,67,.85)}
+.sync-status[data-sync-state="success"]{background:rgba(46,175,98,.18);border-color:#2eaf62;color:#a9f2c5}
+.sync-status[data-sync-state="conflict"]{background:rgba(229,57,53,.17);border-color:#e53935;color:#ffb8b8}
+.sync-status[data-sync-state="error"]{background:rgba(242,153,54,.18);border-color:#f29936;color:#ffd29b}
+.sync-status[data-sync-state="running"]{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.28)}
+.sync-status[data-sync-state="success"] .sync-status-dot{background:#2eaf62}
+.sync-status[data-sync-state="conflict"] .sync-status-dot{background:#e53935}
+.sync-status[data-sync-state="error"] .sync-status-dot{background:#f29936}
+.sync-status[data-sync-state="running"] .sync-status-dot{background:#9aa4af}
+.sync-status-panel{max-width:1100px;margin:10px auto;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.sync-status-panel p{margin:8px 0;line-height:1.5}.sync-status-panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.sync-status-panel-head strong{font-size:15px}
+.visually-hidden{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+@media(max-width:600px){.topbar{padding:9px 10px;gap:6px}.brand{gap:6px}.brand img{width:clamp(72px,22vw,105px);max-height:34px}.brand p{font-size:9px;max-width:76px;white-space:normal}.topbar-actions{gap:4px}.account-identity-status{gap:5px;font-size:11px}.account-identity-name{max-width:82px}.account-status-dot{width:9px;height:9px;flex-basis:9px}.icon-action,.sync-status{width:34px;height:34px;min-width:34px;padding:6px}.icon-action svg,.sync-status-icon{width:18px;height:18px}.sync-status-panel{margin:8px 10px}}
 
 /* V6.0-dev: estado claro de autenticación sin implicar sincronización de datos. */
 .account-state{padding:10px 12px;border:1px solid var(--line);border-radius:9px;margin:10px 0;font-weight:650;background:var(--bg)}#cloudLoginMessage{min-height:1.2em}
