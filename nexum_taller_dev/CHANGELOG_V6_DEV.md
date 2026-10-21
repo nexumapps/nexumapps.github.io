@@ -1,3 +1,10 @@
+## V6.0-dev-v62 — consulta fiable del username
+- La cabecera solicita el campo `username` al servidor mediante una acción autenticada de `login-with-username`, validando el token y consultando `public.profiles` por el ID del usuario autenticado.
+- Corrige el respaldo que podía mostrar el correo completo en vez del username real. La acción devuelve únicamente el username de la propia cuenta.
+- Sin cambios en credenciales, membresías, permisos ni datos del taller.
+- Alineados versión de aplicación, título, referencia de estilos, caché PWA, version.txt y changelogs.
+- Verificación estática: comprobar sintaxis y respuesta de la función; confirmar visualmente en navegador después de recargar.
+
 ## V6.0-dev-v61 — nombre de usuario desde el perfil autenticado
 - La etiqueta de usuario de la cabecera consulta `username` directamente en `public.profiles` usando el ID de la sesión autenticada; la política RLS limita la lectura al perfil propio.
 - Se deja de priorizar `user_metadata` para evitar que un valor antiguo como «Ejemplo» reemplace el nombre de usuario real.
