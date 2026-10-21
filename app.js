@@ -1,4 +1,5 @@
-const APP_VERSION="6.0-dev-v57";
+const APP_VERSION="6.0-dev-v58";
+// V6.0-dev-v58: la auditoría reciente se mantiene colapsada en un desplegable dentro de la consola ya protegida por autorización global del servidor.
 // V6.0-dev-v57: dirigir la recuperación a la ruta marcada reset_password y reconocer el token de recuperación sin depender de que el fragmento sea la única fuente de parámetros.
 // V6.0-dev-v56: retirar avisos de revisión obsoletos solo cuando no hay operaciones pendientes y el registro local ya confirma una versión igual o más reciente.
 // V6.0-dev-v55: aumentar ligeramente el logo y la tipografía de la marca y del usuario; conservar intacto el tamaño de los botones.
