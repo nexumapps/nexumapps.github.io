@@ -1,5 +1,5 @@
 /* NEXUM Taller PWA — cache de recursos estáticos y fallback de navegación offline. */
-const CACHE = 'nexum-v6.0-dev-v30-sync-conflict-comparison';
+const CACHE = 'nexum-v6.0-dev-v31-publish-local-resolution';
 const ASSETS = [
   './', './index.html', './styles.css', './app.js', './sync-core.js',
   './manifest.webmanifest', './logo-claro.svg', './logo-oscuro.svg',
