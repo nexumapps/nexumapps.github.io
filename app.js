@@ -1,5 +1,5 @@
-const APP_VERSION="6.0-dev-v33";
-// V6.0-dev-v33: publicar al elegir conservar local y señalizar errores/éxitos con iconos.
+const APP_VERSION="6.0-dev-v34";
+// V6.0-dev-v34: publicar al elegir conservar local y señalizar errores/éxitos con iconos.
 const KEY="taller_electronica_v5";
 const ECON_CONFIG_KEY="taller_electronica_economia_config";
 const SHARED_SETTINGS_KEY="nexum_shared_settings_v1";
@@ -730,10 +730,10 @@ const KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6
    const finalTitle=conflicts||review?"Revisión necesaria":remaining?"Cambios pendientes":"Sincronización completada";
    const summary=`Enviadas: ${sent}; conflictos: ${conflicts}; pendientes: ${remaining}; cambios recibidos: ${received}; aplicados: ${applied}; para revisar: ${review}.`;
    status(finalTitle,summary);
-   alert(`${conflicts||review?"🔴":"🟢"} Sincronización terminada.\n${summary}\nCiclos completados: ${cycles}${conflicts||review?"\n🔴 Hay cambios que requieren revisión; no se sobrescribieron automáticamente.":""}`);
+   alert(`${conflicts||review?"❌ ERROR / REVISIÓN":"✅ TODO CORRECTO"}\nSincronización terminada.\n${summary}\nCiclos completados: ${cycles}${conflicts||review?"\n❌ Hay cambios que requieren revisión; no se sobrescribieron automáticamente.":""}`);
   }catch(e){
    status("Sincronización pendiente",e.message+" Los datos locales se conservaron.");
-   alert("🔴 No se completó la sincronización: "+e.message+"\n\n🟢 Los datos locales siguen guardados y las operaciones se pueden reintentar.");
+   alert("❌ ERROR: No se completó la sincronización: "+e.message+"\n\n✅ Los datos locales siguen guardados y las operaciones se pueden reintentar.");
   }finally{if(btn)btn.disabled=false;render();}
  }
  const saveBtn=$("saveSyncConfigBtn");if(saveBtn)saveBtn.onclick=()=>{const wid=$("syncWorkshopId").value.trim(),deviceLabel=$("syncDeviceLabel").value.trim();if(!/^[0-9a-f-]{36}$/i.test(wid)){alert("El ID del taller debe ser un UUID válido, proporcionado por el administrador.");return;}localStorage.setItem(CFG_KEY,JSON.stringify({workshopId:wid,deviceLabel}));render();};const syncBtn=$("syncNowBtn");if(syncBtn)syncBtn.onclick=run;
