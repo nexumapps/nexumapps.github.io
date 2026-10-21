@@ -1,5 +1,5 @@
-const APP_VERSION="6.0-dev-v27";
-// V6.0-dev-v27: coordina ciclos de envío/recepción en una pulsación; los conflictos y cambios inseguros siguen en revisión.
+const APP_VERSION="6.0-dev-v28";
+// V6.0-dev-v28: las colisiones de legacy_id se detectan como conflictos recuperables; tickets/ECN se conservan con ID alternativo y la tasa se reancla a la identidad canónica.
 const KEY="taller_electronica_v5";
 const ECON_CONFIG_KEY="taller_electronica_economia_config";
 const SHARED_SETTINGS_KEY="nexum_shared_settings_v1";
@@ -493,7 +493,94 @@ const KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6
  async function ensureDevice(s,c){let d;try{d=JSON.parse(localStorage.getItem(DEVICE_KEY)||"null")}catch{}if(!d||d.workshopId!==c.workshopId||d.userId!==s.user.id){d={id:core.uuid(),workshopId:c.workshopId,userId:s.user.id};localStorage.setItem(DEVICE_KEY,JSON.stringify(d));}
   // Device registration is deliberately an explicit RPC; no direct table writes from the browser.
   await api("/rest/v1/rpc/nexum_register_sync_device",{p_workshop_id:c.workshopId,p_device_id:d.id,p_device_label:c.deviceLabel||navigator.userAgent.slice(0,120)},s);return d;}
- async function push(s,c,d){let q=readOutbox(),sent=0,conflicts=0,attempts=0;const blockedEntities=new Set();while(attempts++<500){const next=q.find(x=>x.status==="pending"&&!blockedEntities.has(x.entityType+":"+x.entityId));if(!next)break;const op={...next};q=core.markSending(q,op.operationId);writeOutbox(q);try{const result=await api("/rest/v1/rpc/nexum_apply_sync_operation",{p_operation_id:op.operationId,p_workshop_id:c.workshopId,p_device_id:d.id,p_entity_type:op.entityType,p_entity_id:op.entityId,p_action:op.action,p_base_version:op.baseVersion,p_payload:op.payload||{},p_legacy_id:op.legacyId||null},s);if(result.outcome==="conflict"){conflicts++;blockedEntities.add(op.entityType+":"+op.entityId);q=q.map(x=>x.operationId===op.operationId?{...x,status:"conflict",remoteConflict:result.current_record||null}:x);writeOutbox(q);continue;}if(result.outcome!=="applied")throw Error("Respuesta de sincronización no reconocida.");q=core.acknowledge(q,op.operationId);if(Number.isInteger(Number(result.version))){q=q.map(x=>x.entityType===op.entityType&&x.entityId===op.entityId&&x.status==="pending"?{...x,baseVersion:Number(result.version)}:x);}writeOutbox(q);markLocalSync(op.entityType,op.entityId,result.version);sent++;}catch(e){q=core.markRetryable(q,op.operationId,e.message);writeOutbox(q);throw e;}}return{sent,conflicts,queueRemaining:q.filter(x=>x.status==="pending").length};}
+
+ function persistCollisionRemap(type,entityId,newId,newPayload){
+  if(type==="ticket"){
+   const rec=data.find(x=>x.syncId===entityId);if(!rec)return false;
+   rec.ticketId=newId;rec.syncStatus="pending";
+   for(const x of data){if(x!==rec&&x.ticketGarantiaOrigen===newId){}}
+  }else if(type==="movement"){
+   const rec=movements.find(x=>x.syncId===entityId);if(!rec)return false;
+   rec.id=newId;rec.syncStatus="pending";
+  }else return false;
+  suppressSyncDiff=true;try{save()}finally{suppressSyncDiff=false;}
+  return true;
+ }
+ function resolveLegacyIdCollision(op,q,result){
+  const remote=result?.current_record;
+  if(!remote?.entity_id)return null;
+  const remotePayload=remote.payload||{};
+  // The shared exchange-rate setting is one logical record. Rebind the stale local identity
+  // to the canonical cloud identity, then retry the user's rate change against its current version.
+  if(op.entityType==="settings"&&op.payload?.settingKey==="exchange_rate"&&remotePayload.settingKey==="exchange_rate"){
+   const canonicalId=remote.entity_id,version=Number(remote.version||1);
+   const local={...op.payload,syncId:canonicalId,remoteVersion:version,syncStatus:"pending",entityType:"settings"};
+   localStorage.setItem(SHARED_SETTINGS_KEY,JSON.stringify(local));
+   q=q.map(x=>{
+    if(x.entityType!=="settings"&&(x.legacyId!=="exchange_rate"))return x;
+    if(x.entityType!=="settings"&&x.legacyId==="exchange_rate")return x;
+    if(x.entityType==="settings"&&(x.entityId===op.entityId||x.legacyId==="exchange_rate")){
+     return {...x,entityId:canonicalId,baseVersion:version,status:"pending",remoteConflict:null,
+       operationId:x.operationId===op.operationId?core.uuid():x.operationId};
+    }
+    return x;
+   });
+   writeOutbox(q);
+   return {q,retry:true};
+  }
+  // For a genuinely different ticket or ECN movement, keep both records and give the incoming
+  // record a unique visible ID. Never merge their business data just because the old ID matches.
+  if((op.entityType==="ticket"||op.entityType==="movement")&&(op.collisionResolutions||0)<3){
+   const oldId=String(op.legacyId||op.payload?.ticketId||op.payload?.id||"REGISTRO");
+   const newId=oldId.slice(0,175)+"-R"+crypto.randomUUID().slice(0,6).toUpperCase();
+   const payload={...(op.payload||{})};
+   if(op.entityType==="ticket")payload.ticketId=newId;else payload.id=newId;
+   if(!persistCollisionRemap(op.entityType,op.entityId,newId,payload))return null;
+   q=q.map(x=>{
+    if(x.entityType!==op.entityType||x.entityId!==op.entityId)return x;
+    const nextPayload=x.action==="upsert"&&x.payload&&typeof x.payload==="object"
+      ? {...x.payload,[op.entityType==="ticket"?"ticketId":"id"]:newId}:x.payload;
+    if(x.operationId===op.operationId){
+     return {...core.makeOperation({entityType:x.entityType,record:{...payload,syncId:x.entityId},action:x.action,
+       baseVersion:Number(x.baseVersion||0),payload:x.action==="delete"?null:nextPayload,legacyId:newId}),
+       collisionResolutions:(x.collisionResolutions||0)+1};
+    }
+    return {...x,legacyId:newId,payload:nextPayload,status:x.status==="conflict"?"conflict":"pending",remoteConflict:null};
+   });
+   writeOutbox(q);
+   return {q,retry:true,newId};
+  }
+  return null;
+ }
+ async function push(s,c,d){
+  let q=readOutbox(),sent=0,conflicts=0,attempts=0;const blockedEntities=new Set();
+  while(attempts++<500){
+   const next=q.find(x=>x.status==="pending"&&!blockedEntities.has(x.entityType+":"+x.entityId));if(!next)break;
+   const op={...next};q=core.markSending(q,op.operationId);writeOutbox(q);
+   try{
+    const result=await api("/rest/v1/rpc/nexum_apply_sync_operation",{p_operation_id:op.operationId,p_workshop_id:c.workshopId,p_device_id:d.id,p_entity_type:op.entityType,p_entity_id:op.entityId,p_action:op.action,p_base_version:op.baseVersion,p_payload:op.payload||{},p_legacy_id:op.legacyId||null},s);
+    if(result.outcome==="legacy_id_collision"){
+     const resolved=resolveLegacyIdCollision(op,q,result);
+     if(resolved?.retry){q=resolved.q;continue;}
+     conflicts++;blockedEntities.add(op.entityType+":"+op.entityId);
+     q=q.map(x=>x.operationId===op.operationId?{...x,status:"conflict",remoteConflict:result.current_record||null,conflictType:"legacy_id"}:x);
+     writeOutbox(q);continue;
+    }
+    if(result.outcome==="conflict"){
+     conflicts++;blockedEntities.add(op.entityType+":"+op.entityId);
+     q=q.map(x=>x.operationId===op.operationId?{...x,status:"conflict",remoteConflict:result.current_record||null}:x);
+     writeOutbox(q);continue;
+    }
+    if(result.outcome!=="applied")throw Error("Respuesta de sincronización no reconocida.");
+    q=core.acknowledge(q,op.operationId);
+    if(Number.isInteger(Number(result.version))){
+     q=q.map(x=>x.entityType===op.entityType&&x.entityId===op.entityId&&x.status==="pending"?{...x,baseVersion:Number(result.version)}:x);
+    }
+    writeOutbox(q);markLocalSync(op.entityType,op.entityId,result.version);sent++;
+   }catch(e){q=core.markRetryable(q,op.operationId,e.message);writeOutbox(q);throw e;}
+  }
+  return{sent,conflicts,queueRemaining:q.filter(x=>x.status==="pending").length};
+ }
  function markLocalSync(type,id,version){const key=type==="ticket"?"taller_electronica_v5":type==="equipment"?"nexum_equipment_v1":type==="movement"?"taller_electronica_v5_movements":type==="settings"?SHARED_SETTINGS_KEY:null;if(type==="settings"){try{const r=JSON.parse(localStorage.getItem(SHARED_SETTINGS_KEY)||"null");if(r?.syncId===id){r.remoteVersion=Number(version||r.remoteVersion||0);r.syncStatus="synced";localStorage.setItem(SHARED_SETTINGS_KEY,JSON.stringify(r));}}catch(e){console.warn("No se pudo actualizar la versión de la tasa sincronizada",e)}return;}if(!key)return;try{const rows=JSON.parse(localStorage.getItem(key)||"[]");let changed=false;for(const r of rows){if(r.syncId===id){r.remoteVersion=Number(version||r.remoteVersion||0);r.syncStatus="synced";changed=true;}}if(changed)localStorage.setItem(key,JSON.stringify(rows));const memory=type==="ticket"?data:type==="equipment"?equipmentRecords:type==="movement"?movements:[];for(const r of memory){if(r.syncId===id){r.remoteVersion=Number(version||r.remoteVersion||0);r.syncStatus="synced";}}}catch(e){console.warn("No se pudo actualizar la versión local confirmada",e)}}
  async function pull(s,c){let cursor=Number(localStorage.getItem(CURSOR_KEY)||0),received=0,applied=0,review=0;let inbox=[];try{inbox=JSON.parse(localStorage.getItem("nexum_sync_inbox_v1")||"[]")}catch{}
   // Primero procesa cambios seguros guardados en sincronizaciones anteriores, aunque el cursor remoto ya haya avanzado.
