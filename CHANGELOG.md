@@ -1,3 +1,8 @@
+## V6.0-dev-v31 — publicar la versión local elegida
+- «Conservar versión local» genera un identificador de operación nuevo para evitar la respuesta idempotente de la operación rechazada.
+- Actualiza la base a la versión remota revisada y lanza la sincronización inmediatamente, también para la tasa compartida.
+- Los registros históricos y sus tasas individuales no se reescriben.
+
 ## V6.0-dev-v30 — comparación antes de resolver conflictos
 - La revisión de sincronización muestra los campos diferentes entre la copia local y la remota; para la tasa, muestra explícitamente ambos valores CUP/USD.
 - Los cambios con operaciones locales pendientes ofrecen decisiones separadas: conservar la versión remota o conservar la local y reintentar con la versión remota como base.
