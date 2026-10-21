@@ -1,5 +1,5 @@
-const APP_VERSION="6.0-dev-v29";
-// V6.0-dev-v29: respuestas de sincronización inesperadas quedan en revisión sin abortar el resto de operaciones independientes.
+const APP_VERSION="6.0-dev-v30";
+// V6.0-dev-v30: revisión de sincronización muestra diferencias local/remoto y permite resolver cambios pendientes de forma explícita.
 const KEY="taller_electronica_v5";
 const ECON_CONFIG_KEY="taller_electronica_economia_config";
 const SHARED_SETTINGS_KEY="nexum_shared_settings_v1";
@@ -469,7 +469,39 @@ const KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6
  function render(){const c=cfg(),s=session(),btn=$("syncNowBtn"),info=$("syncConfigInfo"),wid=$("syncWorkshopId"),label=$("syncDeviceLabel");if(wid&&c)wid.value=c.workshopId||"";if(label&&c)label.value=c.deviceLabel||"";if(info)info.textContent=s?(c?.workshopId?"Cuenta iniciada. Taller configurado; el dispositivo se registra al conectar.":"Sesión iniciada, pero falta el ID de taller asignado por el administrador."):"Inicia sesión antes de sincronizar.";if(btn)btn.disabled=!s||!c?.workshopId;renderInbox();}
  function readInbox(){try{const x=JSON.parse(localStorage.getItem("nexum_sync_inbox_v1")||"[]");return Array.isArray(x)?x:[]}catch{return []}}
  function writeInbox(items){localStorage.setItem("nexum_sync_inbox_v1",JSON.stringify(items.slice(-2000)))}
- function renderInbox(){const host=$("syncInboxReview");if(!host)return;const inbox=readInbox().slice().reverse().slice(0,50);const conflicts=readOutbox().filter(x=>x.status==="conflict");if(!inbox.length&&!conflicts.length){host.innerHTML="<p class=\"field-help\">No hay cambios remotos pendientes de revisión.</p>";return;}const conflictHtml=conflicts.map(op=>`<article class="sync-inbox-item sync-inbox-conflict"><h4>Conflicto · ${esc(op.entityType)} · ${esc(op.legacyId||op.entityId)}</h4><p>El servidor tiene otra versión (${esc(op.remoteConflict?.version??"desconocida")}). Elige explícitamente qué versión conservar.</p><div class="actions"><button type="button" class="secondary" data-sync-conflict="remote" data-operation="${escAttr(op.operationId)}">Usar versión remota</button><button type="button" class="primary" data-sync-conflict="local" data-operation="${escAttr(op.operationId)}">Conservar cambios locales</button></div></article>`).join("");const inboxHtml=inbox.map(ch=>{const conflict=!!ch.needsReview;const label=ch.action==="delete"||ch.record?.deleted_at?"Borrado remoto":"Cambio remoto";const summary=ch.record?.payload?.ticketId||ch.record?.payload?.equipoId||ch.record?.legacy_id||ch.entity_id;return `<article class="sync-inbox-item ${conflict?"sync-inbox-conflict":""}"><h4>${label} · ${esc(ch.entity_type)} · ${esc(summary)}</h4><p>Versión ${esc(ch.version??ch.record?.version??"?")} · Cursor ${esc(ch.cursor??"?")}${conflict?" · Tiene cambios locales pendientes":""}</p><div class="actions"><button type="button" class="primary" data-sync-inbox-apply="${escAttr(ch.cursor)}" ${conflict?"disabled":""}>Aplicar en este dispositivo</button><button type="button" class="secondary" data-sync-inbox-dismiss="${escAttr(ch.cursor)}">Archivar aviso</button></div></article>`}).join("");host.innerHTML=conflictHtml+inboxHtml;}
+ function localSyncRecord(ch){
+  const type=ch.entity_type,id=ch.entity_id;
+  if(type==="settings"){try{return JSON.parse(localStorage.getItem(SHARED_SETTINGS_KEY)||"null")}catch{return null}}
+  const rows=type==="ticket"?data:type==="movement"?movements:type==="equipment"?equipmentRecords:[];
+  return rows.find(x=>x.syncId===id)||null;
+ }
+ function diffRows(local,remote){
+  const a=local&&typeof local==="object"?local:{},b=remote&&typeof remote==="object"?remote:{};
+  const keys=[...new Set([...Object.keys(a),...Object.keys(b)])].filter(k=>!["syncId","remoteVersion","syncStatus","updatedAt","entityType","entity_id","entity_type"].includes(k)).sort();
+  const rows=keys.filter(k=>JSON.stringify(a[k]??null)!==JSON.stringify(b[k]??null));
+  if(!rows.length)return '<p class="field-help">No se detectan diferencias de campos visibles.</p>';
+  return '<div class="sync-diff"><div class="sync-diff-head"><b>Campo</b><b>Este dispositivo</b><b>Nube</b></div>'+rows.map(k=>'<div class="sync-diff-row"><b>'+esc(pretty(k))+'</b><span>'+esc(a[k]===undefined?'—':typeof a[k]==="object"?JSON.stringify(a[k]):String(a[k]))+'</span><span>'+esc(b[k]===undefined?'—':typeof b[k]==="object"?JSON.stringify(b[k]):String(b[k]))+'</span></div>').join("")+'</div>';
+ }
+ function renderInbox(){
+  const host=$("syncInboxReview");if(!host)return;
+  const inbox=readInbox().slice().reverse().slice(0,50),conflicts=readOutbox().filter(x=>x.status==="conflict");
+  if(!inbox.length&&!conflicts.length){host.innerHTML="<p class=\\"field-help\\">No hay cambios remotos pendientes de revisión.</p>";return;}
+  const conflictHtml=conflicts.map(op=>{
+   const remote=op.remoteConflict||{},local=op.payload||{},remotePayload=remote.payload||{};
+   return '<article class="sync-inbox-item sync-inbox-conflict"><h4>Conflicto · '+esc(op.entityType)+' · '+esc(op.legacyId||op.entityId)+'</h4><p>Versión local: '+esc(op.baseVersion??"desconocida")+' · Versión remota: '+esc(remote.version??"desconocida")+'</p>'+diffRows(local,remotePayload)+'<div class="actions"><button type="button" class="secondary" data-sync-conflict="remote" data-operation="'+escAttr(op.operationId)+'">Conservar versión remota</button><button type="button" class="primary" data-sync-conflict="local" data-operation="'+escAttr(op.operationId)+'">Conservar versión local</button></div></article>';
+  }).join("");
+  const inboxHtml=inbox.map(ch=>{
+   const conflict=!!ch.needsReview,label=ch.action==="delete"||ch.record?.deleted_at?"Borrado remoto":"Cambio remoto";
+   const remote=ch.record?.payload||{},local=localSyncRecord(ch);
+   const summary=remote.ticketId||remote.id||remote.equipoId||remote.settingKey||ch.record?.legacy_id||ch.entity_id;
+   const pending=readOutbox().some(op=>op.entityType===ch.entity_type&&op.entityId===ch.entity_id&&["pending","sending","conflict"].includes(op.status));
+   const isRate=ch.entity_type==="settings"&&remote.settingKey==="exchange_rate";
+   const rateDiff=isRate?'<div class="sync-rate-compare"><div><small>Este dispositivo</small><strong>'+esc(local?.rate??currentRate()??"No definida")+' CUP/USD</strong></div><div><small>Nube (versión '+esc(ch.version??ch.record?.version??"?")+')</small><strong>'+esc(remote.rate??"No definida")+' CUP/USD</strong></div></div>':diffRows(local,remote);
+   const decision=conflict&&pending?'<div class="actions"><button type="button" class="secondary" data-sync-inbox-remote="'+escAttr(ch.cursor)+'">Usar versión remota</button><button type="button" class="primary" data-sync-inbox-local="'+escAttr(ch.cursor)+'">Conservar versión local</button></div>':'<div class="actions"><button type="button" class="primary" data-sync-inbox-apply="'+escAttr(ch.cursor)+'">Aplicar cambio remoto</button><button type="button" class="secondary" data-sync-inbox-dismiss="'+escAttr(ch.cursor)+'">Archivar aviso</button></div>';
+   return '<article class="sync-inbox-item '+(conflict?"sync-inbox-conflict":"")+'"><h4>'+label+' · '+esc(ch.entity_type)+' · '+esc(summary)+'</h4><p>Versión '+esc(ch.version??ch.record?.version??"?")+' · Cursor '+esc(ch.cursor??"?")+(pending?" · Tiene cambios locales pendientes":"")+'</p>'+(conflict?'<p class="field-help">Compara ambas versiones antes de decidir. No se modifica nada hasta que elijas.</p>':"")+rateDiff+decision+'</article>';
+  }).join("");
+  host.innerHTML=conflictHtml+inboxHtml;
+ }
  function applyRemoteSnapshot(type,id,action,payload,version){
   if(!["ticket","equipment","movement","settings"].includes(type))throw Error("Esta entidad todavía no tiene un aplicador local seguro: "+type);
   if(type==="settings"){if(action==="delete")return;if(payload?.settingKey!=="exchange_rate"||!(Number(payload.rate)>0))throw Error("La configuración remota de tasa no es válida.");const rec={...payload,syncId:id,remoteVersion:Number(version||1),syncStatus:"synced"};localStorage.setItem(SHARED_SETTINGS_KEY,JSON.stringify(rec));rememberRate(Number(rec.rate));economyConfig={...economyConfig,rate:Number(rec.rate),date:rec.updatedAt?.slice(0,10)||today()};saveEconomyConfig();if($("settingRate"))$("settingRate").value=String(rec.rate);return;}
@@ -486,8 +518,34 @@ const KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6
   }
   suppressSyncDiff=true;try{save()}finally{suppressSyncDiff=false;}
  }
- const inboxHost=$("syncInboxReview");if(inboxHost)inboxHost.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const cursor=b.dataset.syncInboxApply??b.dataset.syncInboxDismiss;if(cursor!==undefined){const inbox=readInbox(),idx=inbox.findIndex(ch=>String(ch.cursor)===String(cursor));if(idx<0)return;const ch=inbox[idx];if(b.dataset.syncInboxApply!==undefined){const pending=readOutbox().some(op=>op.entityType===ch.entity_type&&op.entityId===ch.entity_id&&["pending","sending","conflict"].includes(op.status));if(ch.needsReview||pending){alert("Este registro tiene cambios locales pendientes. Resuelve primero el conflicto para evitar perder datos.");return;}const action=ch.action==="delete"||ch.record?.deleted_at?"delete":"upsert";const payload=ch.record?.payload;const exists=(ch.entity_type==="ticket"?data:ch.entity_type==="movement"?movements:ch.entity_type==="equipment"?equipmentRecords:[]).some(x=>x.syncId===ch.entity_id);if(!confirm(`${action==="delete"?"Aplicar el borrado remoto":"Aplicar el cambio remoto"}${exists?" reemplazará el registro local de esta entidad":" añadirá el registro a este dispositivo"}. ¿Continuar?`))return;try{applyRemoteSnapshot(ch.entity_type,ch.entity_id,action,payload,ch.version??ch.record?.version);inbox.splice(idx,1);writeInbox(inbox);renderInbox();status("Cambios recibidos revisados","El cambio seleccionado se aplicó localmente. Las fotos continúan en el dispositivo original.");}catch(err){alert(err.message||"No se pudo aplicar el cambio remoto.");}}else{if(!confirm("Archivar el aviso no aplica el cambio remoto. ¿Continuar?"))return;inbox.splice(idx,1);writeInbox(inbox);renderInbox();}return;}
-  const mode=b.dataset.syncConflict,operationId=b.dataset.operation;if(!mode||!operationId)return;let q=readOutbox(),op=q.find(x=>x.operationId===operationId&&x.status==="conflict");if(!op)return;const remote=op.remoteConflict||{};if(mode==="remote"){if(!confirm("Se descartarán las operaciones locales pendientes de esta entidad y se aplicará la versión remota. ¿Continuar?"))return;try{applyRemoteSnapshot(op.entityType,op.entityId,remote.deleted_at?"delete":"upsert",remote.payload,remote.version);q=q.filter(x=>!(x.entityType===op.entityType&&x.entityId===op.entityId));writeOutbox(q);status("Conflicto resuelto","Se conservó la versión remota.");renderInbox();}catch(err){alert(err.message||"No se pudo aplicar la versión remota.");}}else{if(!confirm("Se reenviará tu versión local usando como base la versión remota actual. Esto reemplazará los campos que cambiaste si el servidor lo acepta. ¿Continuar?"))return;const remoteVersion=Number(remote.version||0);q=q.map(x=>x.operationId===operationId?{...x,status:"pending",baseVersion:remoteVersion,remoteConflict:null}:x);writeOutbox(q);renderInbox();status("Conflicto listo para reintento","Se conservaron los cambios locales; pulsa Sincronizar ahora para reintentarlos.");}
+ const inboxHost=$("syncInboxReview");if(inboxHost)inboxHost.addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b)return;
+  const cursor=b.dataset.syncInboxApply??b.dataset.syncInboxDismiss??b.dataset.syncInboxRemote??b.dataset.syncInboxLocal;
+  if(cursor!==undefined){
+   const inbox=readInbox(),idx=inbox.findIndex(ch=>String(ch.cursor)===String(cursor));if(idx<0)return;const ch=inbox[idx];
+   const pendingOps=readOutbox().filter(op=>op.entityType===ch.entity_type&&op.entityId===ch.entity_id&&["pending","sending","conflict"].includes(op.status));
+   if(b.dataset.syncInboxRemote!==undefined){
+    if(!confirm("Se descartarán únicamente las operaciones locales pendientes de esta entidad y se aplicará la versión remota. Los demás registros no cambiarán. ¿Continuar?"))return;
+    try{const action=ch.action==="delete"||ch.record?.deleted_at?"delete":"upsert";applyRemoteSnapshot(ch.entity_type,ch.entity_id,action,ch.record?.payload,ch.version??ch.record?.version);let q=readOutbox().filter(op=>!(op.entityType===ch.entity_type&&op.entityId===ch.entity_id));writeOutbox(q);writeInbox(inbox.filter(x=>String(x.cursor)!==String(cursor)));renderInbox();renderAll();status("Conflicto resuelto","Se conservó la versión remota comparada.");}catch(err){alert(err.message||"No se pudo aplicar la versión remota.");}return;
+   }
+   if(b.dataset.syncInboxLocal!==undefined){
+    const remoteVersion=Number(ch.version??ch.record?.version??0);
+    if(!confirm("Se conservará la versión local. Las operaciones pendientes de esta entidad se reintentarán usando como base la versión remota "+remoteVersion+". ¿Continuar?"))return;
+    let q=readOutbox().map(op=>op.entityType===ch.entity_type&&op.entityId===ch.entity_id&&["pending","sending","conflict"].includes(op.status)?{...op,status:"pending",baseVersion:remoteVersion,remoteConflict:null,conflictType:null,conflictDetail:null}:op);
+    writeOutbox(q);writeInbox(inbox.filter(x=>String(x.cursor)!==String(cursor)));renderInbox();status("Conflicto listo para reintento","Se conservó la versión local. Pulsa Sincronizar para enviar los cambios.");return;
+   }
+   if(b.dataset.syncInboxApply!==undefined){
+    if(ch.needsReview||pendingOps.length){alert("Este registro tiene cambios locales pendientes. Compara las versiones y resuelve el conflicto primero.");return;}
+    const action=ch.action==="delete"||ch.record?.deleted_at?"delete":"upsert";
+    if(!confirm((action==="delete"?"Aplicar el borrado remoto":"Aplicar el cambio remoto")+" reemplazará el registro local correspondiente, si existe. ¿Continuar?"))return;
+    try{applyRemoteSnapshot(ch.entity_type,ch.entity_id,action,ch.record?.payload,ch.version??ch.record?.version);writeInbox(inbox.filter(x=>String(x.cursor)!==String(cursor)));renderInbox();renderAll();status("Cambios recibidos revisados","El cambio remoto se aplicó localmente.");}catch(err){alert(err.message||"No se pudo aplicar el cambio remoto.");}return;
+   }
+   if(b.dataset.syncInboxDismiss!==undefined){if(!confirm("Archivar el aviso no aplica el cambio remoto. ¿Continuar?"))return;writeInbox(inbox.filter(x=>String(x.cursor)!==String(cursor)));renderInbox();return;}
+  }
+  const mode=b.dataset.syncConflict,operationId=b.dataset.operation;if(!mode||!operationId)return;
+  let q=readOutbox(),op=q.find(x=>x.operationId===operationId&&x.status==="conflict");if(!op)return;const remote=op.remoteConflict||{};
+  if(mode==="remote"){if(!confirm("Se descartarán las operaciones locales pendientes de esta entidad y se aplicará la versión remota. ¿Continuar?"))return;try{applyRemoteSnapshot(op.entityType,op.entityId,remote.deleted_at?"delete":"upsert",remote.payload,remote.version);q=q.filter(x=>!(x.entityType===op.entityType&&x.entityId===op.entityId));writeOutbox(q);status("Conflicto resuelto","Se conservó la versión remota.");renderInbox();renderAll();}catch(err){alert(err.message||"No se pudo aplicar la versión remota.");}}
+  else{if(!confirm("Se reenviará tu versión local usando como base la versión remota actual. ¿Continuar?"))return;const remoteVersion=Number(remote.version||0);q=q.map(x=>x.operationId===operationId?{...x,status:"pending",baseVersion:remoteVersion,remoteConflict:null,conflictType:null,conflictDetail:null}:x);writeOutbox(q);renderInbox();status("Conflicto listo para reintento","Se conservaron los cambios locales; pulsa Sincronizar ahora para reintentarlos.");}
  });
  async function api(path,body,s){const res=await fetch(URL+path,{method:"POST",headers:{"Content-Type":"application/json","apikey":KEY,"Authorization":"Bearer "+s.access_token},body:JSON.stringify(body)});const data=await res.json().catch(()=>({}));if(!res.ok)throw new Error(data.message||data.error||data.details||("Servidor respondió "+res.status));return data;}
  async function ensureDevice(s,c){let d;try{d=JSON.parse(localStorage.getItem(DEVICE_KEY)||"null")}catch{}if(!d||d.workshopId!==c.workshopId||d.userId!==s.user.id){d={id:core.uuid(),workshopId:c.workshopId,userId:s.user.id};localStorage.setItem(DEVICE_KEY,JSON.stringify(d));}
