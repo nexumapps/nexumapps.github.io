@@ -580,7 +580,12 @@ const KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6
   }
   renderInbox();
  }
+ const memberWorkshopSelect=$("memberWorkshopSelect");
  const memberWorkshopUseBtn=$("memberWorkshopUseBtn");
+ if(memberWorkshopSelect)memberWorkshopSelect.addEventListener("change",()=>{
+  const chosenId=memberWorkshopSelect.value,current=cfg();
+  if(memberWorkshopUseBtn)memberWorkshopUseBtn.disabled=!chosenId||chosenId===current?.workshopId||assignmentLoading||!!assignmentError||!!window.NexumSyncBusy;
+ });
  if(memberWorkshopUseBtn)memberWorkshopUseBtn.addEventListener("click",()=>{
   const s=session(),chosenId=$("memberWorkshopSelect")?.value;
   const memberships=Array.isArray(workshopAssignment?.workshops)?workshopAssignment.workshops:[];
