@@ -1,3 +1,9 @@
+## V6.0-dev-v53 — escala de cabecera ajustada
+- Se aumenta ligeramente el tamaño del logo y del texto «Gestión del Taller / V6-dev53».
+- Se aumenta ligeramente la tipografía del nombre de usuario, con límites adaptados a móvil.
+- Se conservan exactamente los tamaños de los botones de sincronización, instalación y cierre de sesión.
+- Cambio visual solamente; sin cambios en autenticación, sincronización ni datos. Pendiente prueba visual en PWA.
+
 ## V6.0-dev-v52 — texto completo bajo el logo
 - Se conserva la posición de la etiqueta bajo el logo y se restaura el texto en dos líneas: «Gestión del Taller» y «V6-dev52».
 - La versión interna, el título de la página, la referencia de estilos y la caché PWA se alinean en v52.
