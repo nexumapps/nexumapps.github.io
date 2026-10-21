@@ -2,6 +2,7 @@
 - Se añade a Configuración un selector para usuarios con varias membresías activas, con confirmación antes de cambiar el taller utilizado en este dispositivo.
 - El selector solo ofrece los talleres que el backend devuelve como membresías activas; el cambio actualiza el contexto local y conserva por separado tickets, movimientos, equipos, fotos y colas de sincronización de cada taller.
 - Se bloquea el cambio mientras hay una sincronización en curso. Los administradores globales conservan el flujo «Usar en este dispositivo» de la consola administrativa.
+- El botón de selección se habilita al escoger una opción diferente de la actualmente activa, sin necesidad de recargar la pantalla.
 - Se alinean APP_VERSION, etiqueta visible, título, referencia de estilos, version.txt y caché PWA en v59.
 - En Supabase, NEXUM ONE (entorno de pruebas anterior) pasa a NEXUM ZERO; se crea un NEXUM ONE limpio para el uso real; NEXUM TWO (Coming Soon) queda inactivo para evitar que se use antes de su lanzamiento.
 - Verificación estática del código y revisión de la configuración de talleres; pendiente prueba funcional en navegador con un usuario que tenga dos membresías activas.
