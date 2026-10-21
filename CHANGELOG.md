@@ -1,3 +1,8 @@
+## V6.0-dev-v26 — corrección del salto literal y carga de tasa compartida
+- Elimina el texto literal \\n que quedó en el HTML antes de la cabecera principal.
+- La tasa compartida confirmada localmente se hidrata al iniciar la app, evitando que una tasa local antigua vuelva a prevalecer al abrir Configuración.
+- Se actualizan la versión de la aplicación, la hoja de estilos y la caché de la PWA.
+
 ## V6.0-dev-v25 — confirmación de versión de tasa sincronizada
 - Corrige la actualización local de la versión remota de la tasa de cambio después de que Supabase confirma su envío, para evitar que el siguiente cambio reutilice una versión obsoleta.
 - Actualiza la versión de la hoja de estilos para invalidar la copia anterior en el navegador.
