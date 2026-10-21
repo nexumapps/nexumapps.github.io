@@ -1,3 +1,9 @@
+## V6.0-dev-v48 — identidad mínima en cabecera
+- La barra superior muestra el nombre de usuario disponible en la sesión y un indicador Online/Offline basado en `navigator.onLine`.
+- El identificador introducido se conserva en la sesión local y durante la renovación del token; se prefiere el nombre de usuario de los metadatos si existe.
+- La conectividad de red no se presenta como garantía de sincronización remota.
+- No se han alterado datos del taller ni el esquema de Supabase; pendiente prueba visual en navegador/PWA.
+
 ## V6.0-dev-v47 — renovación proactiva y continuidad offline
 - Se expone la renovación de sesión al resto de la app y se comprueba cada 60 s cuando está visible; renueva al recuperar conectividad y al volver a sincronizar.
 - La ausencia de conexión no provoca cierre de sesión ni eliminación de credenciales guardadas; el uso local sigue disponible. El login inicial y la sincronización remota sí requieren conexión.
