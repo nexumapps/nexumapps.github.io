@@ -1,3 +1,8 @@
+## V6.0-dev-v32 — confirmar y publicar la versión local elegida
+- La resolución local crea una sola operación nueva con la versión remota revisada como base, retirando solo las operaciones conflictivas previas de la misma entidad.
+- La acción espera la sincronización y muestra el resultado; no se limita a posponer el conflicto.
+- Para la tasa compartida, publica el valor local vigente con la identidad canónica de la nube; no modifica tasas históricas de tickets ni ECN.
+
 ## V6.0-dev-v31 — publicar la versión local elegida
 - «Conservar versión local» genera un identificador de operación nuevo para evitar la respuesta idempotente de la operación rechazada.
 - Actualiza la base a la versión remota revisada y lanza la sincronización inmediatamente, también para la tasa compartida.
