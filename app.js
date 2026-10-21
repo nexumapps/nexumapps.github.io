@@ -449,7 +449,7 @@ window.examine=examine;window.enableEdit=enableEdit;window.saveEdit=saveEdit;win
 /* V6.0-dev-v11 — contrato de administración global y consola UI; el endpoint debe desplegarse antes de habilitar acceso. */
 (function initManualSync(){
  const URL="https://ywcrowviufbioeqixwrq.supabase.co";
- const KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ5d2Nyb3d2aXdmaW9lcWl4d3JxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEyNjIwMzAsImV4cCI6MjEwNjgzODAzMH0.Mh9BHpigCVQ8Q624_M1o495A5JwTRL0M7q7yF5g5RQE";
+const KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3Y3Jvd3ZpdWZiaW9lcWl4d3JxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEyNjIwMzAsImV4cCI6MjEwNjgzODAzMH0.Mh9BHpigCVQ8Q624_M1o495A5JwTRL0M7q7yF5g5RQE";
  const SESSION_KEY="nexum_v6_auth_session", CFG_KEY="nexum_sync_config_v1", DEVICE_KEY="nexum_sync_device_v1", CURSOR_KEY="nexum_sync_cursor_v1", OUTBOX="nexum_sync_outbox_v1";
  const $=id=>document.getElementById(id), core=window.NexumSyncCore;
  const session=()=>{try{return JSON.parse(localStorage.getItem(SESSION_KEY)||"null")}catch{return null}};
