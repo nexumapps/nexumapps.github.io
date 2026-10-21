@@ -1,3 +1,8 @@
+## V6.0-dev-v51 — versión debajo del logo
+- Se coloca la etiqueta de versión en una línea discreta debajo del logotipo, alineada a la izquierda.
+- Se mantiene la identidad del usuario, el indicador de sesión y el botón de cerrar sesión a la derecha; sincronización e instalación siguen en la fila inferior.
+- Cambio visual solamente: no altera la autenticación, la sincronización ni los datos locales/remotos. Pendiente prueba visual en PWA.
+
 ## V6.0-dev-v50 — fila secundaria de herramientas
 - Se mueve sincronización e instalación a una fila compacta debajo de la cabecera, reservando el espacio superior para logo/versión, usuario, estado y cierre de sesión.
 - Se conserva el mismo botón de sincronización y el mismo panel desplegable con «Sincronizar ahora»; solo cambia su ubicación visual.
