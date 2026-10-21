@@ -1,3 +1,8 @@
+## V6.0-dev-v29 — respuestas inesperadas recuperables
+- Una respuesta de sincronización no reconocida deja la operación afectada en conflicto/revisión, conserva el detalle y permite continuar con operaciones independientes.
+- Se mantiene la cola local; no se confirma una operación que el servidor no haya aceptado.
+- Se actualiza la versión visible y la caché de la PWA.
+
 ## V6.0-dev-v28 — resolución recuperable de colisiones de identificadores
 - Supabase detecta `legacy_id` duplicados antes de escribir y devuelve un conflicto estructurado en lugar de abortar la sincronización.
 - Los tickets y movimientos ECN distintos con el mismo ID visible conservan ambos registros; el entrante recibe un ID alternativo y sus operaciones pendientes se actualizan para reintento.
