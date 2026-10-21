@@ -1,3 +1,8 @@
+## V6.0-dev-v46 — recarga tras autenticación
+- El formulario de login recarga la página una vez guardada la sesión válida para reconstruir el estado de la aplicación y sus permisos.
+- La recarga solo ocurre tras un login correcto, no durante renovaciones silenciosas de sesión.
+- No se modifican datos locales ni remotos.
+
 ## V6.0-dev-v45 — asignación del taller desde la cuenta
 - La pantalla de vinculación ya no solicita UUID ni permite que un usuario normal cambie de taller.
 - La aplicación consulta `nexum_get_my_workshops()` con la sesión autenticada y usa la membresía activa como fuente de verdad.
