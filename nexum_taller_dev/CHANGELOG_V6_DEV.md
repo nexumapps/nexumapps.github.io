@@ -1,3 +1,8 @@
+## V6.0-dev-v53 — escala de cabecera ajustada
+- Aumenta ligeramente el logo, el texto de marca y el nombre de usuario; se conservan las dimensiones de todos los botones.
+- Ajustes específicos para móvil mantienen límites de ancho para reducir riesgo de desbordamiento.
+- Sin cambios funcionales, de datos locales/remotos ni de esquema Supabase. Pendiente validación visual en navegador/PWA.
+
 ## V6.0-dev-v52 — texto completo bajo el logo
 - Se corrige el bloque de marca para mostrar «Gestión del Taller» en la primera línea y «V6-dev52» debajo, manteniendo la posición aprobada por el usuario.
 - Se actualizan la versión interna, la etiqueta/título, version.txt, referencia de estilos y caché del service worker.
