@@ -1,3 +1,9 @@
+## V6.0-dev-v49 — cabecera compacta y estados por color
+- Se reduce el texto de la barra superior y se usan iconos SVG para cerrar sesión, abrir opciones de sincronización e instalar la PWA.
+- El usuario permanece visible con un indicador verde para sesión activa, gris sin conexión y rojo para problema de sesión; la etiqueta tiene descripción accesible.
+- La sincronización usa gris neutral, verde al completar, rojo ante conflictos y naranja ante errores. El texto explicativo permanece dentro del panel de estado.
+- Sin cambios en registros locales/remotos ni en el esquema de Supabase. Pendiente prueba visual y de estados en navegador/PWA.
+
 ## V6.0-dev-v48 — identidad mínima en cabecera
 - La barra superior muestra el nombre de usuario disponible en la sesión y un indicador Online/Offline basado en `navigator.onLine`.
 - El identificador introducido se conserva en la sesión local y durante la renovación del token; se prefiere el nombre de usuario de los metadatos si existe.
