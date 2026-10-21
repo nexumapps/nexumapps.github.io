@@ -1,3 +1,10 @@
+## V6.0-dev-v61 — nombre de usuario desde el perfil autenticado
+- La etiqueta de usuario de la cabecera consulta `username` directamente en `public.profiles` usando el ID de la sesión autenticada; la política RLS limita la lectura al perfil propio.
+- Se deja de priorizar `user_metadata` para evitar que un valor antiguo como «Ejemplo» reemplace el nombre de usuario real.
+- El texto de estado de sesión usa el username del perfil cuando está disponible; si falla la consulta, mantiene un respaldo de la sesión sin modificar datos de la cuenta.
+- Se alinean APP_VERSION, título, referencia de estilos, version.txt y caché PWA en v61. Sin cambios en membresías, permisos, datos ni lógica de sincronización.
+- Verificación estática: pendiente comprobar en navegador con las cuentas admin y charliecs.
+
 ## V6.0-dev-v60 — indicadores de actividad en operaciones lentas
 - Los botones de acciones administrativas asíncronas muestran un indicador giratorio y texto «Procesando…» mientras esperan respuesta; quedan temporalmente deshabilitados para evitar dobles pulsaciones.
 - Se añade estado de carga a la comprobación de permisos, creación de talleres/usuarios, gestión de membresías y permisos administrativos.
