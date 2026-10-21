@@ -1,4 +1,5 @@
-const APP_VERSION="6.0-dev-v61";
+const APP_VERSION="6.0-dev-v62";
+// V6.0-dev-v62: obtener username mediante una acción autenticada del servidor; evita depender de lectura REST directa del perfil.
 // V6.0-dev-v61: la cabecera obtiene el username del perfil autenticado en public.profiles; no confía en metadatos de nombre editables/obsoletos.
 // V6.0-dev-v60: operaciones asíncronas muestran actividad y bloquean dobles pulsaciones hasta confirmar éxito o error.
 function setButtonBusy(button,label="Procesando…"){
@@ -980,9 +981,9 @@ const KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6
   profileUsernameAttemptedUserId=uid;
   profileUsernamePromise=(async()=>{
    try{
-    const response=await fetch(URL+"/rest/v1/profiles?select=username&id=eq."+encodeURIComponent(uid),{headers:{"apikey":PUBLIC_KEY,"Authorization":"Bearer "+s.access_token}});
+    const response=await fetch(URL+"/functions/v1/login-with-username",{method:"POST",headers:{"Content-Type":"application/json","apikey":PUBLIC_KEY,"Authorization":"Bearer "+s.access_token},body:JSON.stringify({action:"profile_username"})});
     if(!response.ok)throw Error("No se pudo consultar el usuario del perfil.");
-    const rows=await response.json(),username=Array.isArray(rows)?String(rows[0]?.username||"").trim():"";
+    const result=await response.json(),username=String(result?.username||"").trim();
     if(get()?.user?.id!==uid)return;
     if(username){profileUsername=username;profileUsernameUserId=uid;}
    }catch{/* La etiqueta usa un respaldo local si el perfil no está disponible. */}
