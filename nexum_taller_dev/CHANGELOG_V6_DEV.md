@@ -1,3 +1,8 @@
+## V6.0-dev-v58 — auditoría reciente plegable
+- La sección de auditoría queda dentro de un desplegable cerrado por defecto, reduciendo el espacio ocupado por la consola administrativa.
+- El contenido de auditoría solo aparece dentro de la consola que el servidor muestra tras confirmar permisos de administrador global; se conserva la carga y visualización de los eventos.
+- Sin cambios en permisos, datos ni lógica de auditoría.
+
 ## V6.0-dev-v57 — recuperación de contraseña con destino explícito
 - La solicitud de recuperación redirige a la aplicación con `?reset_password=1`.
 - El cliente reconoce el token de recuperación desde el fragmento o la consulta y solo abre el formulario si hay token y contexto de recuperación.
