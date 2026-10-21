@@ -1,3 +1,10 @@
+## V6.0-dev-v28 — resolución recuperable de colisiones de identificadores
+- Supabase detecta `legacy_id` duplicados antes de escribir y devuelve un conflicto estructurado en lugar de abortar la sincronización.
+- Los tickets y movimientos ECN distintos con el mismo ID visible conservan ambos registros; el entrante recibe un ID alternativo y sus operaciones pendientes se actualizan para reintento.
+- Si la colisión corresponde a la misma tasa compartida, el cliente reancla la operación a la identidad canónica y reintenta con la versión remota actual.
+- Los conflictos que no se pueden resolver con seguridad quedan en revisión; las demás operaciones continúan. No se borran datos locales ni se reescriben tasas históricas.
+- Se alinea la versión visible y la caché de la PWA.
+
 ## V6.0-dev-v27 — identidad común para la tasa de cambio
 - Corrige la causa de la falta de sincronización bidireccional: cada navegador podía crear un identificador distinto para la misma tasa compartida.
 - Todos los dispositivos usan el identificador estable del ajuste de tasa ya existente en Supabase, y actualizan el registro compartido en lugar de crear otro independiente.
