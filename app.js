@@ -1,4 +1,4 @@
-const APP_VERSION="6.0-dev-v44";
+const APP_VERSION="6.0-dev-v45";
 // V6.0-dev-v38: confirmar contraseña inicial y revelar/ocultar contraseñas; publicar al elegir conservar local y señalizar errores/éxitos con iconos.
 const KEY="taller_electronica_v5";
 const ECON_CONFIG_KEY="taller_electronica_economia_config";
@@ -8,6 +8,7 @@ const DEFAULT_CATEGORIES=["Sin definir","Electrodomésticos","Electrónica","Car
 const CATEGORIES_KEY="nexum_categories_v1", SETTINGS_KEY="nexum_settings_v1";
 
 /*
+ * V6.0-dev-v45 — asignación del taller obtenida de la membresía autenticada.
  * V6.0-dev-v44 — aislamiento local por taller activo.
  * Las claves históricas globales NO se leen, modifican ni borran automáticamente:
  * permanecen intactas hasta que el usuario decida explícitamente cómo migrarlas.
@@ -535,12 +536,32 @@ window.examine=examine;window.enableEdit=enableEdit;window.saveEdit=saveEdit;win
 const KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3Y3Jvd3ZpdWZiaW9lcWl4d3JxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEyNjIwMzAsImV4cCI6MjEwNjgzODAzMH0.Mh9BHpigCVQ8Q624_M1o495A5JwTRL0M7q7yF5g5RQE";
  const SESSION_KEY="nexum_v6_auth_session", CFG_KEY="nexum_sync_config_v1", DEVICE_KEY="nexum_sync_device_v1", CURSOR_KEY="nexum_sync_cursor_v1", OUTBOX="nexum_sync_outbox_v1";
  const $=id=>document.getElementById(id), core=window.NexumSyncCore;
+ let workshopAssignment=null,assignmentError="",assignmentLoading=false,assignmentUserId="",assignmentPromise=null;
  const session=()=>window.NexumAuthSession?.get()||(()=>{try{return JSON.parse(contextStorage.getItem(SESSION_KEY)||"null")}catch{return null}})();
  const cfg=()=>{try{return JSON.parse(contextStorage.getItem(CFG_KEY)||"null")}catch{return null}};
  const readOutbox=()=>{try{const x=JSON.parse(contextStorage.getItem(OUTBOX)||"[]");return Array.isArray(x)?x:[]}catch{return []}};
  const writeOutbox=x=>contextStorage.setItem(OUTBOX,JSON.stringify(x));
  const status=(title,detail)=>{let t=String(title||""),d=String(detail||"");const dot=$("syncStatusBtn")?.querySelector(".sync-status-dot"),btn=$("syncStatusBtn");if(/^Sesión iniciada|^Sesión no iniciada/i.test(t)&&["ok","error","pending"].includes(btn?.dataset.syncState||""))return;const bad=/error|no se pudo|falló|fallo|revisión necesaria/i.test(t)||/(?:conflictos|para revisar):\s*[1-9]\d*/i.test(d);const pending=/(?:pendientes):\s*[1-9]\d*/i.test(d)||/cambios pendientes/i.test(t);const running=/sincronizando|publicando versión local/i.test(t);const success=/completad|finalizad|resuelt|publicad|guardad|aplicad|todo correcto/i.test(t);const state=bad?"error":pending?"pending":running?"running":success?"ok":"neutral";const prefix=state==="error"?"🔴 ":state==="pending"||state==="running"?"🟡 ":state==="ok"?"🟢 ":"";t=t.replace(/^[🟢🔴🟡⚠️❌✅]+\s*/u,"");if(dot)dot.style.background=state==="error"?"#e53935":state==="ok"?"#2eaf62":state==="pending"||state==="running"?"#f2c66d":"#9aa4af";if(dot)dot.style.boxShadow=state==="error"?"0 0 0 3px rgba(229,57,53,.2)":state==="ok"?"0 0 0 3px rgba(46,175,98,.2)":state==="pending"||state==="running"?"0 0 0 3px rgba(242,198,109,.2)":"none";if(btn)btn.dataset.syncState=state;const a=$("syncStatusLabel"),b=$("syncStatusDetailTitle"),c=$("syncStatusDetail");if(a)a.textContent=prefix+t;if(b)b.textContent=prefix+t;if(c)c.textContent=d;const line=$("syncNetworkLine");if(line)line.textContent=d;};
- function render(){const c=cfg(),s=session(),btn=$("syncNowBtn"),info=$("syncConfigInfo"),wid=$("syncWorkshopId"),label=$("syncDeviceLabel");if(wid&&c)wid.value=c.workshopId||"";if(label&&c)label.value=c.deviceLabel||"";const legacy=legacyUnassignedSummary();if(info)info.textContent=(s?(c?.workshopId?"Cuenta iniciada. Taller configurado; el dispositivo se registra al conectar.":"Sesión iniciada, pero falta el ID de taller asignado por el administrador."):"Inicia sesión antes de sincronizar.")+(legacy?" "+legacy:"");if(btn)btn.disabled=!s||!c?.workshopId;renderInbox();}
+ function render(){
+  const c=cfg(),s=session(),btn=$("syncNowBtn"),info=$("syncConfigInfo"),name=$("syncWorkshopName");
+  const memberships=Array.isArray(workshopAssignment?.workshops)?workshopAssignment.workshops:[];
+  const selected=memberships.find(w=>w.id===c?.workshopId);
+  let label="Inicia sesión para consultar el taller asignado.";
+  if(s){
+   if(assignmentLoading)label="Consultando la asignación del taller…";
+   else if(assignmentError)label="No se pudo comprobar la asignación del taller. Comprueba la conexión e inténtalo de nuevo.";
+   else if(workshopAssignment?.ok!==true)label="No se pudo validar el acceso de esta cuenta.";
+   else if(workshopAssignment.is_global_admin)label=c?.workshopId?(c.workshopName||selected?.name||"Taller seleccionado desde Administración global"):"Administrador global: elige un taller en Administración global y pulsa «Usar en este dispositivo».";
+   else if(memberships.length===1)label=memberships[0].name;
+   else if(memberships.length===0)label="Esta cuenta no tiene ningún taller activo asignado. Solicita al administrador que active su membresía.";
+   else label=selected?.name||"Esta cuenta tiene varias membresías activas. Solicita al administrador que deje asignado el taller correcto.";
+  }
+  if(name)name.textContent=label;
+  const legacy=legacyUnassignedSummary();
+  if(info)info.textContent=(s?(c?.workshopId?"El taller se asigna desde tu cuenta; el identificador permanece interno.":"No hay un taller seleccionado para esta cuenta."):"Inicia sesión para consultar tu asignación.")+(legacy?" "+legacy:"");
+  if(btn)btn.disabled=!s||!c?.workshopId||assignmentLoading||!!assignmentError;
+  renderInbox();
+ }
  function readInbox(){try{const x=JSON.parse(contextStorage.getItem("nexum_sync_inbox_v1")||"[]");return Array.isArray(x)?x:[]}catch{return []}}
  function writeInbox(items){contextStorage.setItem("nexum_sync_inbox_v1",JSON.stringify(items.slice(-2000)))}
  function localSyncRecord(ch){
@@ -666,6 +687,51 @@ const KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6
   }
  });
  async function api(path,body,s){const res=await fetch(URL+path,{method:"POST",headers:{"Content-Type":"application/json","apikey":KEY,"Authorization":"Bearer "+s.access_token},body:JSON.stringify(body)});const data=await res.json().catch(()=>({}));if(!res.ok)throw new Error(data.message||data.error||data.details||("Servidor respondió "+res.status));return data;}
+ function defaultDeviceLabel(){return navigator.userAgent.includes("Mobi")?"Teléfono NEXUM":"Dispositivo NEXUM";}
+ async function refreshWorkshopAssignment(force=false){
+  const s=session();
+  if(!s?.user?.id){workshopAssignment=null;assignmentError="";assignmentLoading=false;assignmentUserId="";render();return;}
+  const uid=s.user.id;
+  if(!force&&assignmentUserId===uid&&(workshopAssignment||assignmentError)){render();return;}
+  if(assignmentPromise)return assignmentPromise;
+  assignmentLoading=true;assignmentError="";render();
+  assignmentPromise=(async()=>{
+   try{
+    const result=await api("/rest/v1/rpc/nexum_get_my_workshops",{},s);
+    if(session()?.user?.id!==uid)return;
+    if(!result||typeof result!=="object")throw Error("Respuesta de asignación no válida.");
+    workshopAssignment=result;
+    if(result.ok===true){
+     const current=cfg()||{};
+     if(result.is_global_admin===true){
+      const match=(result.workshops||[]).find(w=>w.id===current.workshopId);
+      if(match&&current.workshopName!==match.name){
+       contextStorage.setItem(CFG_KEY,JSON.stringify({...current,workshopName:match.name,userId:uid}));
+      }else if(current.workshopId&&!current.userId){
+       contextStorage.setItem(CFG_KEY,JSON.stringify({...current,userId:uid}));
+      }
+     }else{
+      const rows=Array.isArray(result.workshops)?result.workshops:[];
+      const selected=rows.length===1?rows[0]:(rows.length>1?rows.find(w=>w.id===current.workshopId):null);
+      const next=selected?{workshopId:selected.id,workshopName:selected.name,deviceLabel:current.deviceLabel||defaultDeviceLabel(),userId:uid}:{workshopId:"",workshopName:"",deviceLabel:current.deviceLabel||defaultDeviceLabel(),userId:uid};
+      if(current.workshopId!==next.workshopId||current.workshopName!==next.workshopName||current.userId!==uid){
+       if(window.NexumSyncBusy)throw Error("Espera a que termine la sincronización para actualizar el taller asignado.");
+       contextStorage.setItem(CFG_KEY,JSON.stringify(next));
+       window.dispatchEvent(new Event("nexum-sync-config-changed"));
+      }
+     }
+    }else{
+     assignmentError=result.reason||"account_not_authorized";
+    }
+    assignmentUserId=uid;
+   }catch(e){
+    if(session()?.user?.id===uid){assignmentError=e.message||"No se pudo comprobar el taller.";assignmentUserId=uid;}
+   }finally{
+    assignmentLoading=false;assignmentPromise=null;render();
+   }
+  })();
+  return assignmentPromise;
+ }
  async function ensureDevice(s,c){let d;try{d=JSON.parse(contextStorage.getItem(DEVICE_KEY)||"null")}catch{}if(!d||d.workshopId!==c.workshopId||d.userId!==s.user.id){d={id:core.uuid(),workshopId:c.workshopId,userId:s.user.id};contextStorage.setItem(DEVICE_KEY,JSON.stringify(d));}
   // Device registration is deliberately an explicit RPC; no direct table writes from the browser.
   await api("/rest/v1/rpc/nexum_register_sync_device",{p_workshop_id:c.workshopId,p_device_id:d.id,p_device_label:c.deviceLabel||navigator.userAgent.slice(0,120)},s);return d;}
@@ -781,7 +847,7 @@ const KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6
   if(window.NexumSyncBusy)throw Error("Ya hay una sincronización en curso.");
   const s=session(),c=cfg();
   if(!s)throw Error("Inicia sesión primero.");
-  if(!c?.workshopId||!/^[0-9a-f-]{36}$/i.test(c.workshopId))throw Error("Introduce el UUID del taller asignado por el administrador.");
+  if(!c?.workshopId||!/^[0-9a-f-]{36}$/i.test(c.workshopId))throw Error("Esta cuenta todavía no tiene un taller asignado o no se ha podido comprobar su membresía.");
   if(navigator.onLine===false)throw Error("No hay conexión. Las operaciones pendientes se conservaron.");
   window.NexumSyncBusy=true;
   const btn=$("syncNowBtn");if(btn)btn.disabled=true;
@@ -812,8 +878,8 @@ const KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6
    alert("❌ ERROR: No se completó la sincronización: "+e.message+"\n\n✅ Los datos locales siguen guardados y las operaciones se pueden reintentar.");
   }finally{window.NexumSyncBusy=false;if(btn)btn.disabled=false;render();window.dispatchEvent(new Event("nexum-sync-idle"));}
  }
- const saveBtn=$("saveSyncConfigBtn");if(saveBtn)saveBtn.onclick=()=>{if(window.NexumSyncBusy){alert("Espera a que termine la sincronización antes de cambiar de taller.");return;}const wid=$("syncWorkshopId").value.trim(),deviceLabel=$("syncDeviceLabel").value.trim();if(!/^[0-9a-f-]{36}$/i.test(wid)){alert("El ID del taller debe ser un UUID válido, proporcionado por el administrador.");return;}contextStorage.setItem(CFG_KEY,JSON.stringify({workshopId:wid,deviceLabel}));window.dispatchEvent(new Event("nexum-sync-config-changed"));render();};const syncBtn=$("syncNowBtn");if(syncBtn)syncBtn.onclick=run;
- window.addEventListener("storage",e=>{if([SESSION_KEY,CFG_KEY,OUTBOX].includes(e.key))render();});window.addEventListener("nexum-sync-config-changed",render);window.addEventListener("nexum-sync-auth-changed",render);window.addEventListener("focus",render);render();
+ const syncBtn=$("syncNowBtn");if(syncBtn)syncBtn.onclick=run;
+ window.addEventListener("storage",e=>{if([SESSION_KEY,CFG_KEY,OUTBOX].includes(e.key)){render();if(e.key===SESSION_KEY)refreshWorkshopAssignment(true);}});window.addEventListener("nexum-sync-config-changed",render);window.addEventListener("nexum-sync-auth-changed",()=>refreshWorkshopAssignment(true));window.addEventListener("focus",()=>refreshWorkshopAssignment(false));render();refreshWorkshopAssignment(true);
 })();
 
 /* V6.0-dev-v41 — ojo clásico dentro del campo, con SVG abierto/cerrado y sin botón lateral. */
@@ -874,7 +940,7 @@ const KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6
  function inlineActionMessage(button,message,isError=false){let p=button.parentElement?.querySelector(":scope > [data-action-message]");if(!p){p=element("p","","field-help");p.dataset.actionMessage="";p.setAttribute("role","status");button.parentElement?.appendChild(p);}p.textContent=message;p.style.color=isError?"var(--danger, #b42318)":"";}function inlineActionError(button,message){inlineActionMessage(button,message,true);}
  function element(tag,content,className){const n=document.createElement(tag);if(content!==undefined)n.textContent=String(content);if(className)n.className=className;return n;}
  function actionButton(label,handler,secondary=true){const b=element("button",label,secondary?"secondary":"primary");b.type="button";b.addEventListener("click",handler);return b;}
- function renderWorkshops(rows){const host=$("globalAdminWorkshops");host.replaceChildren();const select=$("globalAdminMembershipWorkshop");select.replaceChildren(new Option("Seleccionar taller",""));for(const w of rows){const line=element("div",`${w.name} · ${w.is_active?"Activo":"Inactivo"}`,"field-help");line.appendChild(actionButton(w.is_active?"Desactivar":"Activar",async()=>{if(w.is_active&&!confirm("¿Desactivar este taller? Se bloqueará la sincronización de sus miembros."))return;try{await api("set_workshop_status",{workshop_id:w.id,is_active:!w.is_active});await refreshDashboard();inlineActionMessage(line,"Estado del taller actualizado.");}catch(e){inlineActionError(line,e.message);}}));host.appendChild(line);const idLine=element("div",`ID del taller: ${w.id}`,"field-help");idLine.style.overflowWrap="anywhere";host.appendChild(idLine);if(w.is_active){host.appendChild(actionButton("Usar en este dispositivo",()=>{if(window.NexumSyncBusy){setStatus("Espera a que termine la sincronización antes de cambiar de taller.",true);return;}let old={};try{old=JSON.parse(contextStorage.getItem("nexum_sync_config_v1")||"{}")||{}}catch{}contextStorage.setItem("nexum_sync_config_v1",JSON.stringify({workshopId:w.id,deviceLabel:old.deviceLabel||((navigator.userAgent.includes("Mobi"))?"Teléfono NEXUM":"Dispositivo NEXUM")}));window.dispatchEvent(new Event("nexum-sync-config-changed"));setStatus(`Este dispositivo quedó vinculado a ${w.name}. Pulsa «Sincronizar ahora» para probar la conexión.`);},false));select.add(new Option(w.name,w.id));}}}
+ function renderWorkshops(rows){const host=$("globalAdminWorkshops");host.replaceChildren();const select=$("globalAdminMembershipWorkshop");select.replaceChildren(new Option("Seleccionar taller",""));for(const w of rows){const line=element("div",`${w.name} · ${w.is_active?"Activo":"Inactivo"}`,"field-help");line.appendChild(actionButton(w.is_active?"Desactivar":"Activar",async()=>{if(w.is_active&&!confirm("¿Desactivar este taller? Se bloqueará la sincronización de sus miembros."))return;try{await api("set_workshop_status",{workshop_id:w.id,is_active:!w.is_active});await refreshDashboard();inlineActionMessage(line,"Estado del taller actualizado.");}catch(e){inlineActionError(line,e.message);}}));host.appendChild(line);const idLine=element("div",`ID del taller: ${w.id}`,"field-help");idLine.style.overflowWrap="anywhere";host.appendChild(idLine);if(w.is_active){host.appendChild(actionButton("Usar en este dispositivo",()=>{if(window.NexumSyncBusy){setStatus("Espera a que termine la sincronización antes de cambiar de taller.",true);return;}let old={};try{old=JSON.parse(contextStorage.getItem("nexum_sync_config_v1")||"{}")||{}}catch{}contextStorage.setItem("nexum_sync_config_v1",JSON.stringify({workshopId:w.id,workshopName:w.name,deviceLabel:old.deviceLabel||((navigator.userAgent.includes("Mobi"))?"Teléfono NEXUM":"Dispositivo NEXUM"),userId:session()?.user?.id||""}));window.dispatchEvent(new Event("nexum-sync-config-changed"));setStatus(`Este dispositivo quedó vinculado a ${w.name}. Pulsa «Sincronizar ahora» para probar la conexión.`);},false));select.add(new Option(w.name,w.id));}}}
  function renderUsers(rows){const host=$("globalAdminUsers");host.replaceChildren();const select=$("globalAdminMembershipUser"),adminSelect=$("globalAdminTargetAdmin");select.replaceChildren(new Option("Seleccionar usuario",""));adminSelect.replaceChildren(new Option("Seleccionar usuario",""));const s=session();for(const u of rows){const line=element("div",`${u.username} · ${u.display_name||"Sin nombre"} · ${u.is_active?"Activo":"Inactivo"}${u.force_password_change?" · Cambio de contraseña pendiente":""}`,"field-help");if(u.id!==s?.user?.id){line.appendChild(actionButton(u.is_active?"Desactivar":"Activar",async()=>{if(u.is_active&&!confirm("¿Desactivar esta cuenta? No podrá acceder al taller."))return;try{await api("set_user_status",{user_id:u.id,is_active:!u.is_active});await refreshDashboard();inlineActionMessage(line,"Estado del usuario actualizado.");}catch(e){inlineActionError(line,e.message);}}));line.appendChild(actionButton("Eliminar usuario",async()=>{const typed=prompt(`Eliminar definitivamente la cuenta «${u.username}»? Esta acción no se puede deshacer. Escribe ELIMINAR para confirmar.`);if(typed!=="ELIMINAR")return;try{await api("delete_user",{user_id:u.id,confirmation:"ELIMINAR"});await refreshDashboard();inlineActionMessage(line,`Usuario ${u.username} eliminado.`);}catch(e){inlineActionError(line,e.message);}},false));}host.appendChild(line);if(u.is_active){const label=`${u.username} — ${u.display_name||u.email_snapshot||u.id}`;select.add(new Option(label,u.id));if(!u.force_password_change)adminSelect.add(new Option(label,u.id));}}}
  function renderGlobalAdmins(rows){const host=$("globalAdminAdmins");host.replaceChildren();for(const a of rows||[]){const p=a.profile||{};const line=element("div",`${p.username||a.user_id} · ${p.display_name||p.email_snapshot||""} · ${a.is_active?"Administrador activo":"Revocado"}`,"field-help");if(a.user_id!==session()?.user?.id&&a.is_active)line.appendChild(actionButton("Revocar acceso global",async()=>{if(!confirm("¿Revocar los permisos de administración global de esta cuenta?"))return;try{await api("set_global_admin_status",{user_id:a.user_id,is_active:false,note:$("globalAdminAdminNote").value.trim()});await refreshDashboard();inlineActionMessage(line,"Acceso de administrador global revocado.");}catch(e){inlineActionError(line,e.message);}}));host.appendChild(line);}}
  function renderMemberships(rows){const host=$("globalAdminMemberships");host.replaceChildren();const users=new Map((dashboard?.users||[]).map(u=>[u.id,u]));const workshops=new Map((dashboard?.workshops||[]).map(w=>[w.id,w]));for(const m of rows||[]){const u=users.get(m.user_id),w=workshops.get(m.workshop_id);const line=element("div",`${u?.username||m.user_id} → ${w?.name||m.workshop_id} · ${m.is_active?"Activa":"Inactiva"}`,"field-help");line.appendChild(actionButton(m.is_active?"Desactivar membresía":"Activar membresía",async()=>{if(m.is_active&&!confirm("¿Desactivar esta membresía? El usuario perderá acceso de sincronización a este taller."))return;try{await api("set_membership",{user_id:m.user_id,workshop_id:m.workshop_id,is_active:!m.is_active});await refreshDashboard();inlineActionMessage(line,"Membresía actualizada.");}catch(e){inlineActionError(line,e.message);}}));host.appendChild(line);}}
