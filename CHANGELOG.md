@@ -1,3 +1,10 @@
+## V6.0-dev-v47 — sesión persistente y renovación para uso offline
+- La sesión autenticada se renueva automáticamente mientras la aplicación está abierta, antes de que venza el token de acceso; al volver a tener conexión también intenta renovarla.
+- Si el dispositivo está sin conexión, no intenta renovar contra el servidor ni borra la sesión guardada: los datos locales y el trabajo offline permanecen disponibles. La sincronización remota sigue requiriendo Internet.
+- Antes de sincronizar, intenta renovar la sesión y usa la sesión actualizada, reduciendo errores por JWT de una hora caducado.
+- «Mantener sesión iniciada en este dispositivo» continúa guardando la sesión en almacenamiento persistente; sin marcarlo, la sesión sigue limitada a la pestaña/sesión del navegador.
+- Alineados versión de PWA y caché estática. No se modifica ni elimina ningún registro local o remoto.
+
 ## V6.0-dev-v46 — recarga completa tras iniciar sesión
 - Tras un inicio de sesión correcto, guarda primero la sesión y fuerza una recarga completa de la página para reconstruir menús, cola, permisos administrativos y estado de sincronización desde la sesión ya persistida.
 - No fuerza la recarga en cada renovación del token ni al cerrar sesión.
