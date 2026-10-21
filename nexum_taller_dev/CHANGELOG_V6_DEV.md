@@ -1,3 +1,11 @@
+## V6.0-dev-v60 — indicadores de actividad en operaciones lentas
+- Los botones de acciones administrativas asíncronas muestran un indicador giratorio y texto «Procesando…» mientras esperan respuesta; quedan temporalmente deshabilitados para evitar dobles pulsaciones.
+- Se añade estado de carga a la comprobación de permisos, creación de talleres/usuarios, gestión de membresías y permisos administrativos.
+- El botón de sincronización muestra «Sincronizando…» hasta finalizar, incluyendo errores; conserva el mensaje de resultado existente.
+- La animación respeta la preferencia del sistema de movimiento reducido y se retira al terminar la operación.
+- Se alinean APP_VERSION, etiqueta visible, título, referencia de estilos, version.txt y caché PWA en v60.
+- Verificación estática del código; pendiente probar las operaciones en navegador real y confirmar respuestas de éxito/error.
+
 ## V6.0-dev-v59 — selector de taller por dispositivo y entornos separados
 - Se añade a Configuración un selector para usuarios con varias membresías activas, con confirmación antes de cambiar el taller utilizado en este dispositivo.
 - El selector solo ofrece los talleres que el backend devuelve como membresías activas; el cambio actualiza el contexto local y conserva por separado tickets, movimientos, equipos, fotos y colas de sincronización de cada taller.
