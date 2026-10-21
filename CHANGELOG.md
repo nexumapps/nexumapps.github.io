@@ -1,3 +1,10 @@
+## V6.0-dev-v21 — acceso protegido y recuperación de contraseña
+- La PWA oculta navegación y contenido del taller hasta confirmar una sesión válida; si la sesión caduca o se cierra, vuelve a la pantalla de acceso.
+- Se añade opción de sesión temporal (sessionStorage) o persistente en el dispositivo (localStorage), además de cambiar de cuenta y cerrar sesión.
+- Se añade recuperación por usuario o correo y formulario para establecer una nueva contraseña desde el enlace recibido.
+- Se conservan tickets, fotos, movimientos, configuración y operaciones pendientes al cerrar sesión; no se borran datos locales.
+- Se incrementa la versión visible y la caché de la PWA.
+
 ## V6.0-dev-v20 — sincronización completa en una pulsación
 - La acción de sincronizar coordina hasta cuatro ciclos de envío y recepción en una sola ejecución, con parada tras dos ciclos tranquilos consecutivos.
 - Se muestra un único resumen final; se elimina la confirmación repetitiva antes de enviar la cola pendiente.
