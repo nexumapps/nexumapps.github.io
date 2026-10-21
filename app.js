@@ -485,7 +485,7 @@ const KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6
  function renderInbox(){
   const host=$("syncInboxReview");if(!host)return;
   const inbox=readInbox().slice().reverse().slice(0,50),conflicts=readOutbox().filter(x=>x.status==="conflict");
-  if(!inbox.length&&!conflicts.length){host.innerHTML="<p class=\\"field-help\\">No hay cambios remotos pendientes de revisión.</p>";return;}
+  if(!inbox.length&&!conflicts.length){host.innerHTML='<p class="field-help">No hay cambios remotos pendientes de revisión.</p>';return;}
   const conflictHtml=conflicts.map(op=>{
    const remote=op.remoteConflict||{},local=op.payload||{},remotePayload=remote.payload||{};
    return '<article class="sync-inbox-item sync-inbox-conflict"><h4>Conflicto · '+esc(op.entityType)+' · '+esc(op.legacyId||op.entityId)+'</h4><p>Versión local: '+esc(op.baseVersion??"desconocida")+' · Versión remota: '+esc(remote.version??"desconocida")+'</p>'+diffRows(local,remotePayload)+'<div class="actions"><button type="button" class="secondary" data-sync-conflict="remote" data-operation="'+escAttr(op.operationId)+'">Conservar versión remota</button><button type="button" class="primary" data-sync-conflict="local" data-operation="'+escAttr(op.operationId)+'">Conservar versión local</button></div></article>';
