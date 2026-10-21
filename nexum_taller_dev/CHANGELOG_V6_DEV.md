@@ -1,3 +1,9 @@
+## V6.0-dev-v47 — renovación proactiva y continuidad offline
+- Se expone la renovación de sesión al resto de la app y se comprueba cada 60 s cuando está visible; renueva al recuperar conectividad y al volver a sincronizar.
+- La ausencia de conexión no provoca cierre de sesión ni eliminación de credenciales guardadas; el uso local sigue disponible. El login inicial y la sincronización remota sí requieren conexión.
+- El control «Mantener sesión iniciada en este dispositivo» conserva su comportamiento: localStorage cuando se marca y sessionStorage cuando no.
+- Versionado sincronizado en app.js, index.html, sw.js, version.txt y changelogs. Validación estática de sintaxis; pendiente prueba real prolongada en navegador/PWA.
+
 ## V6.0-dev-v46 — recarga tras autenticación
 - El formulario de login recarga la página una vez guardada la sesión válida para reconstruir el estado de la aplicación y sus permisos.
 - La recarga solo ocurre tras un login correcto, no durante renovaciones silenciosas de sesión.
