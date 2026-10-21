@@ -1,3 +1,8 @@
+## V6.0-dev-v55 — separación sutil en la cabecera
+- Se añade una pequeña separación vertical entre la fila del usuario/cierre de sesión y los botones de sincronización/instalación.
+- Se conserva la barra compacta; el ajuste es de pocos píxeles y no cambia el tamaño de los botones ni su funcionamiento.
+- Sin cambios en autenticación, sincronización ni datos. Pendiente confirmación visual en la PWA.
+
 ## V6.0-dev-v54 — cabecera compacta redistribuida
 - La barra conserva su altura discreta; no se aumenta el espacio vertical global.
 - La marca ocupa el espacio flexible del lado izquierdo y mantiene «Gestión del Taller» con la versión debajo del logo.
