@@ -1,3 +1,8 @@
+## V6.0-dev-v27 — identidad común para la tasa de cambio
+- Corrige la causa de la falta de sincronización bidireccional: cada navegador podía crear un identificador distinto para la misma tasa compartida.
+- Todos los dispositivos usan el identificador estable del ajuste de tasa ya existente en Supabase, y actualizan el registro compartido en lugar de crear otro independiente.
+- La tasa remota confirmada permanece en el mismo registro y su versión se actualiza al sincronizar.
+
 ## V6.0-dev-v26 — corrección del salto literal y carga de tasa compartida
 - Elimina el texto literal \\n que quedó en el HTML antes de la cabecera principal.
 - La tasa compartida confirmada localmente se hidrata al iniciar la app, evitando que una tasa local antigua vuelva a prevalecer al abrir Configuración.
