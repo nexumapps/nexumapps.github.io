@@ -1,3 +1,7 @@
+## V6.0-dev-v39 — errores junto a la acción y diagnóstico de alta
+- Los errores de formularios administrativos se muestran dentro del formulario que los generó; los errores de botones de usuario/taller/membresía aparecen junto a la acción correspondiente.
+- El alta de usuarios devuelve el código y mensaje de base de datos al fallar la creación del perfil, sin exponer contraseñas ni tokens.
+
 ## V6.0-dev-v38 — confirmación y visibilidad de contraseñas
 - El alta de usuarios exige confirmar la contraseña temporal antes de enviar la solicitud; valida coincidencia y longitud de 8–128 caracteres.
 - Se incorpora un control mostrar/ocultar en los campos de contraseña, incluidos los que aparecen dinámicamente (cambio inicial y recuperación).
