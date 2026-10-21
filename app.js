@@ -1,5 +1,5 @@
-const APP_VERSION="6.0-dev-v20";
-// V6.0-dev-v20: coordina ciclos de envío/recepción en una pulsación; los conflictos y cambios inseguros siguen en revisión.
+const APP_VERSION="6.0-dev-v21";
+// V6.0-dev-v21: coordina ciclos de envío/recepción en una pulsación; los conflictos y cambios inseguros siguen en revisión.
 const KEY="taller_electronica_v5";
 const ECON_CONFIG_KEY="taller_electronica_economia_config";
 const OLD_KEYS=["taller_electronica_v4","taller_electronica_v3","taller_electronica_v2","taller_electronica_v1"];
@@ -453,7 +453,7 @@ window.examine=examine;window.enableEdit=enableEdit;window.saveEdit=saveEdit;win
 const KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3Y3Jvd3ZpdWZiaW9lcWl4d3JxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEyNjIwMzAsImV4cCI6MjEwNjgzODAzMH0.Mh9BHpigCVQ8Q624_M1o495A5JwTRL0M7q7yF5g5RQE";
  const SESSION_KEY="nexum_v6_auth_session", CFG_KEY="nexum_sync_config_v1", DEVICE_KEY="nexum_sync_device_v1", CURSOR_KEY="nexum_sync_cursor_v1", OUTBOX="nexum_sync_outbox_v1";
  const $=id=>document.getElementById(id), core=window.NexumSyncCore;
- const session=()=>{try{return JSON.parse(localStorage.getItem(SESSION_KEY)||"null")}catch{return null}};
+ const session=()=>window.NexumAuthSession?.get()||(()=>{try{return JSON.parse(localStorage.getItem(SESSION_KEY)||"null")}catch{return null}})();
  const cfg=()=>{try{return JSON.parse(localStorage.getItem(CFG_KEY)||"null")}catch{return null}};
  const readOutbox=()=>{try{const x=JSON.parse(localStorage.getItem(OUTBOX)||"[]");return Array.isArray(x)?x:[]}catch{return []}};
  const writeOutbox=x=>localStorage.setItem(OUTBOX,JSON.stringify(x));
@@ -530,132 +530,29 @@ const KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6
   }finally{if(btn)btn.disabled=false;render();}
  }
  const saveBtn=$("saveSyncConfigBtn");if(saveBtn)saveBtn.onclick=()=>{const wid=$("syncWorkshopId").value.trim(),deviceLabel=$("syncDeviceLabel").value.trim();if(!/^[0-9a-f-]{36}$/i.test(wid)){alert("El ID del taller debe ser un UUID válido, proporcionado por el administrador.");return;}localStorage.setItem(CFG_KEY,JSON.stringify({workshopId:wid,deviceLabel}));render();};const syncBtn=$("syncNowBtn");if(syncBtn)syncBtn.onclick=run;
- window.addEventListener("storage",e=>{if([SESSION_KEY,CFG_KEY,OUTBOX].includes(e.key))render();});window.addEventListener("nexum-sync-config-changed",render);window.addEventListener("focus",render);render();
+ window.addEventListener("storage",e=>{if([SESSION_KEY,CFG_KEY,OUTBOX].includes(e.key))render();});window.addEventListener("nexum-sync-config-changed",render);window.addEventListener("nexum-sync-auth-changed",render);window.addEventListener("focus",render);render();
 })();
 
-/* V6.0-dev-v7 — autenticación. Renovación coordinada entre pestañas cuando Web Locks está disponible. No sube tickets ni crea taller/dispositivo. */
+/* V6.0-dev-v21 — acceso protegido, persistencia opcional y recuperación por usuario/correo. */
 (function initCloudAccountLogin(){
- const SUPABASE_URL="https://ywcrowviufbioeqixwrq.supabase.co";
- // Clave pública del proyecto: nunca incluir una service_role/secret key en el cliente.
- const SUPABASE_PUBLIC_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3Y3Jvd3ZpdWZiaW9lcWl4d3JxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEyNjIwMzAsImV4cCI6MjEwNjgzODAzMH0.Mh9BHpigCVQ8Q624_M1o495A5JwTRL0M7q7yF5g5RQE";
- const SESSION_KEY="nexum_v6_auth_session";
- const form=document.getElementById("cloudLoginForm");
- const identifier=document.getElementById("cloudIdentifier");
- const password=document.getElementById("cloudPassword");
- const loginBtn=document.getElementById("cloudLoginBtn");
- const logoutBtn=document.getElementById("cloudLogoutBtn");
- const state=document.getElementById("cloudAccountState");
- const message=document.getElementById("cloudLoginMessage");
- const statusLabel=document.getElementById("syncStatusLabel");
- const statusTitle=document.getElementById("syncStatusDetailTitle");
- const cloudDetail=document.querySelector("#syncStatusPanel p:nth-of-type(2)");
- if(!form||!state||!message)return;
- const readSession=()=>{try{const x=JSON.parse(localStorage.getItem(SESSION_KEY)||"null");return x&&x.access_token&&x.refresh_token&&x.user?x:null}catch{return null}};
- const saveSession=x=>localStorage.setItem(SESSION_KEY,JSON.stringify(x));
- const clearSession=()=>localStorage.removeItem(SESSION_KEY);
- let refreshInProgress=null;
- let passwordChangeMode=false;
- const showPasswordChange=()=>{
-  if(passwordChangeMode)return; passwordChangeMode=true;
-  identifier.disabled=false; password.disabled=false; password.autocomplete="current-password";
-  loginBtn.classList.add("hidden"); logoutBtn.classList.add("hidden");
-  const box=document.createElement("div"); box.id="forcedPasswordChange";
-  box.innerHTML=`<p><strong>Primer acceso: cambia tu contraseña</strong></p><label for="cloudNewPassword">Nueva contraseña (mínimo 8 caracteres)</label><input id="cloudNewPassword" type="password" autocomplete="new-password" minlength="8" maxlength="128" required><label for="cloudNewPasswordConfirm">Confirmar nueva contraseña</label><input id="cloudNewPasswordConfirm" type="password" autocomplete="new-password" minlength="8" maxlength="128" required><button class="primary" id="cloudChangePasswordBtn" type="button">Cambiar contraseña</button>`;
-  form.appendChild(box); message.textContent="La contraseña temporal no permite entrar al taller. Elige una contraseña personal para continuar.";
-  box.querySelector("#cloudChangePasswordBtn").addEventListener("click",async()=>{
-   const current=password.value, next=box.querySelector("#cloudNewPassword").value, confirm=box.querySelector("#cloudNewPasswordConfirm").value, b=box.querySelector("#cloudChangePasswordBtn");
-   if(next.length<8||next!==confirm||next===current){message.textContent="Usa al menos 8 caracteres, confirma la contraseña y no repitas la temporal.";return;}
-   b.disabled=true;message.textContent="Actualizando contraseña de forma segura…";
-   try{const response=await fetch(SUPABASE_URL+"/functions/v1/change-initial-password",{method:"POST",headers:{"Content-Type":"application/json","apikey":SUPABASE_PUBLIC_KEY},body:JSON.stringify({identifier:identifier.value.trim(),current_password:current,new_password:next})});const result=await response.json().catch(()=>({}));if(!response.ok||!result.ok)throw new Error(result.error||"No se pudo cambiar la contraseña.");
-    box.remove();passwordChangeMode=false;password.value="";password.autocomplete="current-password";loginBtn.classList.remove("hidden");identifier.disabled=false;password.disabled=false;message.textContent="Contraseña cambiada. Inicia sesión con tu nueva contraseña.";
-   }catch(err){message.textContent=err.message||"No se pudo cambiar la contraseña.";}finally{b.disabled=false;}
-  });
- };
- const setCloudStatus=(label,detail)=>{
-  if(statusLabel)statusLabel.textContent=label;
-  if(statusTitle)statusTitle.textContent=label;
-  if(cloudDetail)cloudDetail.textContent=detail;
- };
- const paint=()=>{
-  const s=readSession();
-  if(s){
-   const who=s.user.user_metadata?.display_name||s.user.email||s.user.id;
-   const expiry=s.expires_at?new Date(s.expires_at*1000):null;
-   state.textContent="Sesión iniciada: "+who+". Taller compartido aún no vinculado."+(expiry?" Token válido hasta "+expiry.toLocaleTimeString()+".":"");
-   loginBtn.classList.add("hidden");logoutBtn.classList.remove("hidden");identifier.disabled=true;password.disabled=true;
-   let syncCfg=null;try{syncCfg=JSON.parse(localStorage.getItem("nexum_sync_config_v1")||"null")}catch{}
-   setCloudStatus(syncCfg?.workshopId?"Sesión iniciada · taller configurado":"Sesión iniciada · taller pendiente",syncCfg?.workshopId?"Taller configurado en este dispositivo; el registro del dispositivo se verifica al sincronizar.":"Sesión autenticada, pero falta configurar el ID del taller. No se envían registros.");
-  }else{
-   state.textContent="No hay una sesión iniciada en este dispositivo.";
-   loginBtn.classList.remove("hidden");logoutBtn.classList.add("hidden");identifier.disabled=false;password.disabled=false;
-   setCloudStatus("Solo en este dispositivo","No hay sesión autenticada ni sincronización configurada.");
-  }
- };
- async function refreshSession(force=false){
-  if(refreshInProgress)return refreshInProgress;
-  const runRefresh=async()=>{
-   // Releer dentro del bloqueo: otra pestaña puede haber rotado ya el refresh token.
-   let s=readSession();if(!s)return false;
-   const now=Math.floor(Date.now()/1000);
-   if(!force&&s.expires_at&&s.expires_at>now+120)return true;
-   try{
-    const response=await fetch(SUPABASE_URL+"/auth/v1/token?grant_type=refresh_token",{method:"POST",headers:{"Content-Type":"application/json","apikey":SUPABASE_PUBLIC_KEY},body:JSON.stringify({refresh_token:s.refresh_token})});
-    const body=await response.json().catch(()=>({}));
-    if(response.ok&&body.access_token&&body.refresh_token&&body.user){
-     // No sobrescribir una sesión distinta iniciada mientras la petición estaba en vuelo.
-     const latest=readSession();
-     if(latest&&latest.user?.id===s.user?.id&&latest.refresh_token!==s.refresh_token&&latest.expires_at>Math.floor(Date.now()/1000))return true;
-     saveSession({access_token:body.access_token,refresh_token:body.refresh_token,expires_at:body.expires_at||(Math.floor(Date.now()/1000)+(body.expires_in||3600)),user:body.user,saved_at:Date.now()});
-     paint();return true;
-    }
-    if(response.status===400||response.status===401){
-     const latest=readSession();
-     // No borrar una sesión renovada por otra pestaña mientras esta petición fallaba.
-     if(latest&&latest.refresh_token!==s.refresh_token&&latest.expires_at>Math.floor(Date.now()/1000))return true;
-     clearSession();paint();message.textContent="La sesión caducó o fue revocada. Inicia sesión de nuevo.";return false;
-    }
-    message.textContent="No se pudo renovar la sesión ahora. Se conservaron los datos locales; comprueba la conexión.";
-    return false;
-   }catch(_){message.textContent="Sin conexión para renovar la sesión. Los datos locales siguen disponibles.";return false;}
-  };
-  refreshInProgress=(async()=>{
-   try{
-    // Web Locks coordina pestañas/ventanas del mismo origen en navegadores compatibles.
-    if(navigator.locks&&typeof navigator.locks.request==="function")return await navigator.locks.request("nexum-auth-refresh",{mode:"exclusive"},runRefresh);
-    // En navegadores sin Web Locks se mantiene la exclusión solo dentro de esta pestaña.
-    return await runRefresh();
-   }finally{refreshInProgress=null;}
-  })();
-  return refreshInProgress;
- }
- form.addEventListener("submit",async e=>{
-  e.preventDefault();const id=identifier.value.trim(),pw=password.value;
-  if(!id||!pw)return;
-  loginBtn.disabled=true;message.textContent="Comprobando credenciales…";
-  try{
-   const response=await fetch(SUPABASE_URL+"/functions/v1/login-with-username",{method:"POST",headers:{"Content-Type":"application/json","apikey":SUPABASE_PUBLIC_KEY},body:JSON.stringify({identifier:id,password:pw})});
-   const body=await response.json().catch(()=>({}));
-   if(response.status===428&&body.needs_password_change){showPasswordChange();throw new Error(body.error||"Debes cambiar la contraseña temporal.");}
-   if(!response.ok||!body.access_token||!body.refresh_token||!body.user)throw new Error(body.error||"No se pudo iniciar sesión.");
-   saveSession({access_token:body.access_token,refresh_token:body.refresh_token,expires_at:body.expires_at||(Math.floor(Date.now()/1000)+(body.expires_in||3600)),user:body.user,saved_at:Date.now()});
-   password.value="";message.textContent="Sesión iniciada. No se han enviado tickets ni movimientos.";paint();
-  }catch(err){message.textContent=err instanceof TypeError?"No se pudo contactar el servicio. Comprueba la conexión e inténtalo de nuevo.":(err.message||"No se pudo iniciar sesión.");}
-  finally{loginBtn.disabled=false;}
- });
- logoutBtn.addEventListener("click",async()=>{
-  const s=readSession();clearSession();paint();
-  // El cierre local siempre funciona incluso sin Internet; revocación remota es best-effort.
-  if(s&&navigator.onLine!==false){try{await fetch(SUPABASE_URL+"/auth/v1/logout",{method:"POST",headers:{"apikey":SUPABASE_PUBLIC_KEY,"Authorization":"Bearer "+s.access_token}});}catch(_){}}
-  message.textContent="Sesión cerrada en este dispositivo. Los datos del taller no se han borrado.";
- });
- // Mantener la interfaz sincronizada si el usuario cierra sesión o renueva desde otra pestaña.
- window.addEventListener("storage",e=>{if(e.key===SESSION_KEY){paint();if(readSession())refreshSession().then(()=>paint());}});
- window.addEventListener("focus",()=>{refreshSession().then(()=>paint())});
- document.addEventListener("visibilitychange",()=>{if(!document.hidden)refreshSession().then(()=>paint())});
- paint();refreshSession().then(()=>paint());
-})();
-
-/* V6.0-dev-v14 — consola administrativa muestra UUID y permite vincular este dispositivo al taller activo. */
+ const URL="https://ywcrowviufbioeqixwrq.supabase.co",PUBLIC_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ5d2Nyb3Z2aXdmaW9lcWl4d3JxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEyNjIwMzAsImV4cCI6MjEwNjgzODAzMH0.Mh9BHpigCVQ8Q624_M1o495A5JwTRL0M7q7yF5g5RQE";
+ const K="nexum_v6_auth_session",$=id=>document.getElementById(id),form=$("cloudLoginForm"),id=$("cloudIdentifier"),pw=$("cloudPassword"),login=$("cloudLoginBtn"),logout=$("cloudLogoutBtn"),state=$("cloudAccountState"),msg=$("cloudLoginMessage"),remember=$("cloudRememberLogin"),gate=$("loginGate"),gateContent=$("loginGateContent"),account=$("cloudAccountCard"),recovery=$("cloudRecoveryPanel"),recoverForm=$("cloudRecoveryForm"),recoverId=$("cloudRecoveryIdentifier"),recoverMsg=$("cloudRecoveryMessage"),recoverBtn=$("cloudRecoveryBtn"),recoverBack=$("cloudRecoveryBack"),reset=$("cloudPasswordResetPanel"),resetBtn=$("cloudPasswordResetBtn"),switchBtn=$("accountSwitchBtn"),logoutTop=$("accountLogoutBtn");
+ if(!form||!gate||!account)return;
+ const valid=s=>!!(s?.access_token&&s?.refresh_token&&s?.user),readFrom=store=>{try{const s=JSON.parse(store.getItem(K)||"null");return valid(s)?s:null}catch{return null}},get=()=>readFrom(sessionStorage)||readFrom(localStorage);
+ const emit=()=>{window.dispatchEvent(new Event("nexum-auth-session-changed"));window.dispatchEvent(new Event("nexum-sync-auth-changed"));},save=(s,keep=!!remember?.checked)=>{localStorage.removeItem(K);sessionStorage.removeItem(K);(keep?localStorage:sessionStorage).setItem(K,JSON.stringify(s));emit();},clear=()=>{localStorage.removeItem(K);sessionStorage.removeItem(K);emit();};
+ window.NexumAuthSession={get,save,clear};if(localStorage.getItem(K)&&remember)remember.checked=true;gateContent.appendChild(account);
+ const recoveryLink=()=>{const p=new URLSearchParams(location.hash.slice(1));return p.get("type")==="recovery"&&!!p.get("access_token");},status=(label,detail)=>{const a=$("syncStatusLabel"),b=$("syncStatusDetailTitle"),c=document.querySelector("#syncStatusPanel p:nth-of-type(2)");if(a)a.textContent=label;if(b)b.textContent=label;if(c)c.textContent=detail;},showGate=on=>{document.body.classList.toggle("auth-locked",on);gate.classList.toggle("hidden",!on);if(switchBtn)switchBtn.classList.toggle("hidden",on);if(logoutTop)logoutTop.classList.toggle("hidden",on);};
+ const paint=()=>{const recoveryMode=recoveryLink(),s=recoveryMode?null:get();showGate(!s);if(recoveryMode){account.classList.add("hidden");reset?.classList.remove("hidden");recovery?.classList.add("hidden");}else{account.classList.remove("hidden");reset?.classList.add("hidden");}if(s){state.textContent="Sesión iniciada: "+(s.user.user_metadata?.display_name||s.user.email||s.user.id)+".";login.classList.add("hidden");logout.classList.remove("hidden");id.disabled=true;pw.disabled=true;let c=null;try{c=JSON.parse(localStorage.getItem("nexum_sync_config_v1")||"null")}catch{}status(c?.workshopId?"Sesión iniciada · taller configurado":"Sesión iniciada · taller pendiente",c?.workshopId?"Taller configurado; el dispositivo se verifica al sincronizar.":"Falta configurar el ID del taller.");}else{state.textContent="Inicia sesión para acceder al taller.";login.classList.remove("hidden");logout.classList.add("hidden");id.disabled=false;pw.disabled=false;status("Sesión no iniciada","El contenido del taller está oculto hasta confirmar la sesión.");}};
+ let refreshing=null,forcePasswordChange=false;
+ const forceChange=()=>{if(forcePasswordChange)return;forcePasswordChange=true;login.classList.add("hidden");logout.classList.add("hidden");const box=document.createElement("div");box.id="forcedPasswordChange";box.innerHTML='<p><strong>Primer acceso: cambia tu contraseña</strong></p><label>Nueva contraseña (mínimo 8 caracteres)<input id="cloudNewPassword" type="password" autocomplete="new-password" minlength="8" maxlength="128" required></label><label>Confirmar nueva contraseña<input id="cloudNewPasswordConfirm" type="password" autocomplete="new-password" minlength="8" maxlength="128" required></label><button class="primary" id="cloudChangePasswordBtn" type="button">Cambiar contraseña</button>';form.appendChild(box);msg.textContent="La contraseña temporal no permite entrar al taller.";box.querySelector("#cloudChangePasswordBtn").onclick=async()=>{const a=$("cloudNewPassword").value,b=$("cloudNewPasswordConfirm").value,btn=$("cloudChangePasswordBtn");if(a.length<8||a!==b||a===pw.value){msg.textContent="Usa al menos 8 caracteres, confirma y no repitas la temporal.";return;}btn.disabled=true;try{const r=await fetch(URL+"/functions/v1/change-initial-password",{method:"POST",headers:{"Content-Type":"application/json","apikey":PUBLIC_KEY},body:JSON.stringify({identifier:id.value.trim(),current_password:pw.value,new_password:a})}),o=await r.json().catch(()=>({}));if(!r.ok||!o.ok)throw Error(o.error||"No se pudo cambiar la contraseña.");box.remove();forcePasswordChange=false;pw.value="";msg.textContent="Contraseña cambiada. Inicia sesión con la nueva contraseña.";login.classList.remove("hidden");}catch(e){msg.textContent=e.message||"No se pudo cambiar la contraseña.";}finally{btn.disabled=false;}};};
+ async function refresh(){if(refreshing)return refreshing;const work=async()=>{const s=get();if(!s)return false;if(s.expires_at&&s.expires_at>Math.floor(Date.now()/1000)+120)return true;try{const r=await fetch(URL+"/auth/v1/token?grant_type=refresh_token",{method:"POST",headers:{"Content-Type":"application/json","apikey":PUBLIC_KEY},body:JSON.stringify({refresh_token:s.refresh_token})}),o=await r.json().catch(()=>({}));if(r.ok&&o.access_token&&o.refresh_token&&o.user){save({access_token:o.access_token,refresh_token:o.refresh_token,expires_at:o.expires_at||(Math.floor(Date.now()/1000)+(o.expires_in||3600)),user:o.user,saved_at:Date.now()},!!localStorage.getItem(K));paint();return true;}if(r.status===400||r.status===401){clear();paint();msg.textContent="La sesión caducó o fue revocada. Inicia sesión de nuevo.";}return false;}catch{return false;}};refreshing=(async()=>{try{return navigator.locks?.request?await navigator.locks.request("nexum-auth-refresh",{mode:"exclusive"},work):await work();}finally{refreshing=null;}})();return refreshing;}
+ form.addEventListener("submit",async e=>{e.preventDefault();const identifier=id.value.trim(),password=pw.value;if(!identifier||!password)return;login.disabled=true;msg.textContent="Comprobando credenciales…";try{const r=await fetch(URL+"/functions/v1/login-with-username",{method:"POST",headers:{"Content-Type":"application/json","apikey":PUBLIC_KEY},body:JSON.stringify({identifier,password})}),o=await r.json().catch(()=>({}));if(r.status===428&&o.needs_password_change){forceChange();throw Error(o.error||"Debes cambiar la contraseña temporal.");}if(!r.ok||!o.access_token||!o.refresh_token||!o.user)throw Error(o.error||"Credenciales incorrectas o cuenta no verificada.");save({access_token:o.access_token,refresh_token:o.refresh_token,expires_at:o.expires_at||(Math.floor(Date.now()/1000)+(o.expires_in||3600)),user:o.user,saved_at:Date.now()},!!remember?.checked);pw.value="";msg.textContent="Sesión iniciada correctamente.";paint();}catch(e){msg.textContent=e instanceof TypeError?"No se pudo contactar el servicio. Comprueba la conexión.":e.message||"No se pudo iniciar sesión.";}finally{login.disabled=false;}});
+ const doLogout=async()=>{const s=get();clear();paint();id.disabled=false;pw.disabled=false;pw.value="";if(s&&navigator.onLine!==false)try{await fetch(URL+"/auth/v1/logout",{method:"POST",headers:{"apikey":PUBLIC_KEY,"Authorization":"Bearer "+s.access_token}})}catch{}msg.textContent="Sesión cerrada. Los datos locales del taller se conservaron.";};logout?.addEventListener("click",doLogout);switchBtn?.addEventListener("click",doLogout);logoutTop?.addEventListener("click",doLogout);
+ $("cloudRecoveryBtn")?.addEventListener("click",()=>{recovery.classList.remove("hidden");recoverId.value=id.value.trim();recoverMsg.textContent="";});recoverBack?.addEventListener("click",()=>recovery.classList.add("hidden"));
+ recoverForm?.addEventListener("submit",async e=>{e.preventDefault();const identifier=recoverId.value.trim();if(!identifier)return;recoverBtn.disabled=true;recoverMsg.textContent="Solicitando recuperación…";try{const r=await fetch(URL+"/functions/v1/login-with-username",{method:"POST",headers:{"Content-Type":"application/json","apikey":PUBLIC_KEY},body:JSON.stringify({action:"recover",identifier})}),o=await r.json().catch(()=>({}));if(!r.ok||!o.ok)throw Error(o.error||"No se pudo solicitar la recuperación.");recoverMsg.textContent=o.message||"Si la cuenta existe y está activa, recibirás un enlace en el correo asociado.";}catch(e){recoverMsg.textContent=e.message||"No se pudo solicitar la recuperación.";}finally{recoverBtn.disabled=false;}});
+ resetBtn?.addEventListener("click",async()=>{const a=$("cloudResetPassword").value,b=$("cloudResetPasswordConfirm").value,token=new URLSearchParams(location.hash.slice(1)).get("access_token");if(a.length<8||a!==b){$("cloudPasswordResetMessage").textContent="Las contraseñas deben coincidir y tener al menos 8 caracteres.";return;}if(!token){$("cloudPasswordResetMessage").textContent="El enlace no es válido o ha caducado. Solicita otro.";return;}resetBtn.disabled=true;try{const r=await fetch(URL+"/auth/v1/user",{method:"PUT",headers:{"apikey":PUBLIC_KEY,"Authorization":"Bearer "+token,"Content-Type":"application/json"},body:JSON.stringify({password:a})});if(!r.ok)throw Error("El enlace expiró o no se pudo cambiar la contraseña. Solicita otro.");clear();history.replaceState(null,"",location.pathname+location.search);$("cloudPasswordResetMessage").textContent="Contraseña actualizada. Ya puedes iniciar sesión.";reset.classList.add("hidden");account.classList.remove("hidden");paint();}catch(e){$("cloudPasswordResetMessage").textContent=e.message||"No se pudo actualizar la contraseña.";}finally{resetBtn.disabled=false;}});
+ window.addEventListener("storage",e=>{if(e.key===K){paint();if(get())refresh().then(paint);}});window.addEventListener("focus",()=>refresh().then(paint));document.addEventListener("visibilitychange",()=>{if(!document.hidden)refresh().then(paint);});paint();refresh().then(paint);
+})();/* V6.0-dev-v14 — consola administrativa muestra UUID y permite vincular este dispositivo al taller activo. */
 (function initGlobalAdminConsole(){
  const URL="https://ywcrowviufbioeqixwrq.supabase.co";
  const KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ5d2Nyb3d2aXdmaW9lcWl4d3JxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEyNjIwMzAsImV4cCI6MjEwNjgzODAzMH0.Mh9BHpigCVQ8Q624_M1o495A5JwTRL0M7q7yF5g5RQE";
@@ -664,7 +561,7 @@ const KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6
  const check=$("globalAdminCheckBtn"),panel=$("globalAdminPanel"),status=$("globalAdminStatus");
  if(!check||!panel||!status)return;
  let dashboard=null;
- const session=()=>{try{return JSON.parse(localStorage.getItem(SESSION_KEY)||"null")}catch{return null}};
+ const session=()=>window.NexumAuthSession?.get()||(()=>{try{return JSON.parse(localStorage.getItem(SESSION_KEY)||"null")}catch{return null}})();
  const setStatus=(message,isError=false)=>{status.textContent=message;status.style.color=isError?"var(--danger, #b42318)":"";};
  async function api(action,extra={}){
   const s=session();if(!s?.access_token)throw new Error("Inicia sesión con una cuenta autorizada.");
