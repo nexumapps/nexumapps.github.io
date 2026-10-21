@@ -1,5 +1,5 @@
-const APP_VERSION="6.0-dev-v26";
-// V6.0-dev-v26: coordina ciclos de envío/recepción en una pulsación; los conflictos y cambios inseguros siguen en revisión.
+const APP_VERSION="6.0-dev-v27";
+// V6.0-dev-v27: coordina ciclos de envío/recepción en una pulsación; los conflictos y cambios inseguros siguen en revisión.
 const KEY="taller_electronica_v5";
 const ECON_CONFIG_KEY="taller_electronica_economia_config";
 const SHARED_SETTINGS_KEY="nexum_shared_settings_v1";
@@ -289,7 +289,9 @@ function rememberedRate(){return Number(localStorage.getItem("taller_electronica
 // V26: prioriza la tasa compartida recibida de la nube sobre un valor local antiguo.
 (function hydrateSharedRate(){try{const x=JSON.parse(localStorage.getItem(SHARED_SETTINGS_KEY)||"null");if(x?.settingKey==="exchange_rate"&&Number(x.rate)>0){rememberRate(x.rate);economyConfig={...economyConfig,rate:Number(x.rate),date:x.updatedAt?.slice(0,10)||economyConfig.date};saveEconomyConfig();}}catch(e){console.warn("No se pudo cargar la tasa compartida",e)}})();
 function rememberRate(v){if(Number(v)>0)localStorage.setItem("taller_electronica_last_rate",String(Number(v)))}
-function sharedRateRecord(rate){let x;try{x=JSON.parse(localStorage.getItem(SHARED_SETTINGS_KEY)||"null")}catch{}if(!x||!x.syncId)x={syncId:crypto.randomUUID(),remoteVersion:0,syncStatus:"local",settingKey:"exchange_rate"};return {...x,settingKey:"exchange_rate",rate:Number(rate),updatedAt:new Date().toISOString(),entityType:"settings"}}
+// V27: identidad estable del único ajuste compartido del taller, igual en todos los dispositivos.
+const SHARED_RATE_SYNC_ID="c50321fe-f534-4435-bf6b-b1e604b74fd9";
+function sharedRateRecord(rate){let x;try{x=JSON.parse(localStorage.getItem(SHARED_SETTINGS_KEY)||"null")}catch{}if(!x||x.syncId!==SHARED_RATE_SYNC_ID)x={syncId:SHARED_RATE_SYNC_ID,remoteVersion:1,syncStatus:"synced",settingKey:"exchange_rate"};return {...x,syncId:SHARED_RATE_SYNC_ID,remoteVersion:Number(x.remoteVersion??1),settingKey:"exchange_rate",rate:Number(rate),updatedAt:new Date().toISOString(),entityType:"settings"}}
 function queueSharedRate(rate){const rec=sharedRateRecord(rate);localStorage.setItem(SHARED_SETTINGS_KEY,JSON.stringify(rec));queueLocalOperation("settings",rec,"upsert","exchange_rate");}
 
 function usd(amount,currency,rate){return currency==="USD"?Number(amount||0):Number(amount||0)/Math.max(Number(rate||0),1)}
@@ -540,7 +542,7 @@ const KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6
  window.addEventListener("storage",e=>{if([SESSION_KEY,CFG_KEY,OUTBOX].includes(e.key))render();});window.addEventListener("nexum-sync-config-changed",render);window.addEventListener("nexum-sync-auth-changed",render);window.addEventListener("focus",render);render();
 })();
 
-/* V6.0-dev-v26 — acceso protegido, persistencia opcional y recuperación por usuario/correo. */
+/* V6.0-dev-v27 — acceso protegido, persistencia opcional y recuperación por usuario/correo. */
 (function initCloudAccountLogin(){
  const URL="https://ywcrowviufbioeqixwrq.supabase.co",PUBLIC_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ5d2Nyb3Z2aXdmaW9lcWl4d3JxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEyNjIwMzAsImV4cCI6MjEwNjgzODAzMH0.Mh9BHpigCVQ8Q624_M1o495A5JwTRL0M7q7yF5g5RQE";
  const K="nexum_v6_auth_session",$=id=>document.getElementById(id),form=$("cloudLoginForm"),id=$("cloudIdentifier"),pw=$("cloudPassword"),login=$("cloudLoginBtn"),logout=$("cloudLogoutBtn"),state=$("cloudAccountState"),msg=$("cloudLoginMessage"),remember=$("cloudRememberLogin"),gate=$("loginGate"),gateContent=$("loginGateContent"),account=$("cloudAccountCard"),recovery=$("cloudRecoveryPanel"),recoverForm=$("cloudRecoveryForm"),recoverId=$("cloudRecoveryIdentifier"),recoverMsg=$("cloudRecoveryMessage"),recoverBtn=$("cloudRecoveryBtn"),recoverBack=$("cloudRecoveryBack"),reset=$("cloudPasswordResetPanel"),resetBtn=$("cloudPasswordResetBtn"),switchBtn=$("accountSwitchBtn"),logoutTop=$("accountLogoutBtn");
