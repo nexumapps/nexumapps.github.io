@@ -1,3 +1,9 @@
+## V6.0-dev-v50 — fila secundaria de herramientas
+- Se mueve sincronización e instalación a una fila compacta debajo de la cabecera, reservando el espacio superior para logo/versión, usuario, estado y cierre de sesión.
+- Se conserva el mismo botón de sincronización y el mismo panel desplegable con «Sincronizar ahora»; solo cambia su ubicación visual.
+- El botón de instalación conserva su icono cuando el navegador ofrece el flujo de instalación.
+- Sin cambios en datos, autenticación ni lógica de sincronización. Pendiente prueba visual en la PWA.
+
 ## V6.0-dev-v49 — cabecera compacta e indicadores de estado
 - Se compacta la cabecera: logo y versión visibles a la izquierda; usuario con indicador de sesión/conectividad a la derecha.
 - Cerrar sesión, sincronización e instalación pasan a controles con iconos, etiquetas accesibles y títulos descriptivos.
