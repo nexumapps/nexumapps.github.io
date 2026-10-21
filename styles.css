@@ -254,3 +254,11 @@ html body.auth-locked > header.topbar,html body.auth-locked > nav.tabs,html body
 
 
 /* V6.0-dev-v55 — separación vertical sutil entre usuario y controles inferiores; barra compacta. */
+
+
+/* V6.0-dev-v60 — indicador consistente para operaciones asíncronas */
+button.is-loading{cursor:progress;opacity:.82;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+button:disabled{cursor:wait}
+.button-spinner{display:inline-block;width:15px;height:15px;flex:0 0 15px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:nexum-button-spin .7s linear infinite;vertical-align:middle}
+@keyframes nexum-button-spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.button-spinner{animation-duration:1.8s}}
