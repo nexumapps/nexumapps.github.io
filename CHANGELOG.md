@@ -1,3 +1,8 @@
+## V6.0-dev-v22 — inicialización de sesión para sincronización
+- Corrige la actualización inicial del estado de sincronización cuando una sesión temporal se recupera desde sessionStorage al recargar la PWA.
+- La pantalla de acceso, la persistencia opcional y la recuperación por usuario/correo de V21 se mantienen.
+- Se incrementa la versión visible y la caché para que los dispositivos reciban la corrección.
+
 ## V6.0-dev-v21 — acceso protegido y recuperación de contraseña
 - La PWA oculta navegación y contenido del taller hasta confirmar una sesión válida; si la sesión caduca o se cierra, vuelve a la pantalla de acceso.
 - Se añade opción de sesión temporal (sessionStorage) o persistente en el dispositivo (localStorage), además de cambiar de cuenta y cerrar sesión.
