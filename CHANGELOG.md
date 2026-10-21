@@ -1,3 +1,8 @@
+## V6.0-dev-v35 — estado persistente del indicador de sincronización
+- El indicador superior conserva verde tras una sincronización completada sin conflictos ni revisión pendiente.
+- Rojo solo para errores o conflictos/revisiones reales; amarillo para sincronización en curso o cambios pendientes.
+- Evita que el texto «pendientes: 0» sea interpretado erróneamente como estado de error.
+
 ## V6.0-dev-v34 — indicadores visibles en el aviso emergente
 - Se muestran etiquetas explícitas «✅ TODO CORRECTO» o «❌ ERROR / REVISIÓN» en el resumen emergente, además de los símbolos de estado.
 - Se incrementa la clave de caché de la PWA para forzar que los dispositivos descarguen el archivo actualizado.
