@@ -1,3 +1,10 @@
+## V6.0-dev-v44
+- Aísla tickets, equipos, movimientos, tasa/configuración económica, categorías, cola de salida, bandeja de entrada y cursor de sincronización por taller activo.
+- Aísla la base IndexedDB de fotografías por taller, evitando que el cambio de taller muestre fotos de otro contexto.
+- Al cambiar la vinculación o usar «Usar en este dispositivo», recarga los datos del taller seleccionado; se impide cambiar de taller mientras una sincronización está en curso.
+- Los datos históricos que estaban en claves globales permanecen intactos y separados. No se asignan ni se envían automáticamente; la vinculación/importación explícita queda pendiente.
+- Se alinean la versión visible, app.js, version.txt y la caché de la PWA. No se cambian datos remotos ni permisos del servidor.
+
 ## V6.0-dev-v43
 - Consola administrativa: los mensajes de éxito y error de acciones como crear usuario, cambiar estados, revocar acceso global y gestionar membresías quedan junto a la acción que los originó.
 - La actualización de las listas ya no sobrescribe el mensaje de «Comprobar acceso administrativo»; ese mensaje solo se actualiza cuando se comprueba el acceso.
