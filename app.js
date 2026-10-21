@@ -1,4 +1,4 @@
-const APP_VERSION="6.0-dev-v50";
+const APP_VERSION="6.0-dev-v51";
 // V6.0-dev-v38: confirmar contraseña inicial y revelar/ocultar contraseñas; publicar al elegir conservar local y señalizar errores/éxitos con iconos.
 const KEY="taller_electronica_v5";
 const ECON_CONFIG_KEY="taller_electronica_economia_config";
@@ -966,3 +966,5 @@ const KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6
  $("globalAdminManageAdminsForm")?.addEventListener("submit",async e=>{e.preventDefault();const user_id=$("globalAdminTargetAdmin").value,note=$("globalAdminAdminNote").value.trim();if(!user_id)return;try{await api("set_global_admin_status",{user_id,is_active:true,note});await refreshDashboard();formMessage("globalAdminManageAdminsForm","Acceso de administrador global otorgado.");}catch(err){formMessage("globalAdminManageAdminsForm",err.message,true);}});
  window.addEventListener("storage",e=>{if(e.key===SESSION_KEY){panel.classList.add("hidden");dashboard=null;setStatus("La sesión cambió. Comprueba de nuevo el acceso administrativo.");}});
 })();
+
+/* V6.0-dev-v51: versión visual bajo el logotipo; sin cambios en autenticación o sincronización. */
