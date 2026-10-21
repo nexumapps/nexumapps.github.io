@@ -206,3 +206,9 @@ html body.auth-locked > header.topbar,html body.auth-locked > nav.tabs,html body
 
 /* V6.0-dev-v39: mensajes de error locales a cada formulario/acción administrativa. */
 [data-action-message]{display:block;flex-basis:100%;margin:8px 0 0;overflow-wrap:anywhere;}
+
+/* V6.0-dev-v50 — sincronización e instalación pasan a una fila compacta inferior. */
+.topbar-tools{display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:5px 14px 8px;background:#102a43}
+.topbar-tools .sync-status,.topbar-tools .icon-action{width:34px;height:32px;min-width:34px;padding:5px;border-radius:8px}
+.topbar-tools .sync-status-icon,.topbar-tools .icon-action svg{width:18px;height:18px}
+@media(max-width:600px){.topbar-tools{padding:3px 10px 7px;gap:6px}.topbar-tools .sync-status,.topbar-tools .icon-action{width:32px;height:30px;min-width:32px;padding:4px}}
