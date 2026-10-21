@@ -1,3 +1,9 @@
+## V6.0-dev-v17 — recuperación de estabilidad
+- Se recupera el archivo app.js de la versión estable V6.0-dev-v14 (posterior a la corrección de la clave pública de sincronización).
+- Se revierte temporalmente la aplicación automática de cambios remotos; se conserva el flujo de sincronización manual y la revisión explícita para reducir riesgos mientras se valida el intercambio entre dispositivos.
+- Se incrementa la caché PWA para que los navegadores descarguen el archivo recuperado.
+- No se modifican ni eliminan los datos guardados en el dispositivo.
+
 ## V6.0-dev-v16 — recuperación de arranque
 - Corregido el renderizado de la sección de revisión que contenía un error de sintaxis y bloqueaba la inicialización completa de la aplicación.
 - Incrementada la versión de caché de la PWA para que los dispositivos descarguen el JavaScript corregido.
