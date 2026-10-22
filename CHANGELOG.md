@@ -1,3 +1,9 @@
+## V6.0-dev-v63 — orden unificado de Contabilidad
+- Corrige el campo de fecha común para que los movimientos ECN utilicen `fecha` y los tickets sigan usando `fechaSalida` o `fechaEntrada`.
+- Tickets y movimientos permanecen en una única lista y ahora todos los criterios de ordenamiento comparan ambos tipos; el orden por ID también reconoce el ID de los movimientos ECN.
+- Se mantienen sin cambios los cálculos contables, los registros guardados y la sincronización.
+- Actualizada la versión a v63.
+
 ## V6.0-dev-v62 — consulta fiable del username
 - La cabecera solicita el campo `username` al servidor mediante una acción autenticada de `login-with-username`, validando el token y consultando `public.profiles` por el ID del usuario autenticado.
 - Corrige el respaldo que podía mostrar el correo completo en vez del username real. La acción devuelve únicamente el username de la propia cuenta.
