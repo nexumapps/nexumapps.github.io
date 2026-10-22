@@ -1,3 +1,8 @@
+## V6.0-dev-v64 — fechas comparables en el orden contable
+- La captura confirmó que las fechas de tickets y movimientos ECN no quedaban en orden global al usar «Más antiguos».
+- El comparador ahora normaliza fechas ISO (`AAAA-MM-DD`) y fechas con barras (`DD/MM/AAAA`) al mismo formato antes de ordenar tickets y movimientos en conjunto.
+- Actualizada la versión visible y la caché del service worker para que el navegador descargue los recursos nuevos.
+
 ## V6.0-dev-v63 (ajuste de cabecera y caché PWA)
 - Se actualiza la etiqueta de versión bajo el logo de `V6-dev60` a `V6-dev63`.
 - Se incrementa la versión de caché del service worker a `nexum-v63` para facilitar la descarga de los recursos actualizados.
