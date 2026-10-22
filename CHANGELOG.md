@@ -1,3 +1,7 @@
+## V6.0-dev-v63 (ajuste de cabecera y caché PWA)
+- Se actualiza la etiqueta de versión bajo el logo de `V6-dev60` a `V6-dev63`.
+- Se incrementa la versión de caché del service worker a `nexum-v63` para facilitar la descarga de los recursos actualizados.
+
 ## V6.0-dev-v63 — orden unificado de Contabilidad
 - Corrige el campo de fecha común para que los movimientos ECN utilicen `fecha` y los tickets sigan usando `fechaSalida` o `fechaEntrada`.
 - Tickets y movimientos permanecen en una única lista y ahora todos los criterios de ordenamiento comparan ambos tipos; el orden por ID también reconoce el ID de los movimientos ECN.
