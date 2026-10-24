@@ -1,3 +1,68 @@
+## V6.0-dev-v86 — panel único y clientes sin duplicados
+- Se fuerza el cierre global de cualquier panel abierto antes de abrir el correspondiente al campo activo.
+- Se eliminan paneles previos del campo antes de crear uno nuevo, evitando duplicación por inicializaciones repetidas.
+- Se consolidan registros de cliente por CID; cuando falta CID, por nombre y contacto, combinando datos disponibles.
+- Se mantiene la lista completa con desplazamiento y altura adaptativa.
+
+## V6.0-dev-v85 — lista completa y panel único
+- Las sugerencias muestran todas las coincidencias; el panel permite desplazarse por la lista completa.
+- La altura visible se adapta a la pantalla móvil y ofrece un máximo mayor en escritorio.
+- Al activar Cliente, CID o Contacto, se cierra el panel anterior y queda abierto solo el del campo activo.
+- Se sincronizan versión visible, version.txt, estilos, caché PWA y changelog.
+
+## V6.0-dev-v84 — corrección del panel de sugerencias
+- Se corrige el renderizado para preservar la cabecera y el botón Ocultar al actualizar los resultados.
+- Se separa el contenedor de resultados y se refuerzan la visibilidad, el apilamiento y el desplazamiento del panel en pantallas móviles.
+- Se actualizan versión visible, version.txt, referencia de estilos y caché PWA.
+
+## V6.0-dev-v83 — panel flotante de sugerencias
+- Se sustituye el autocompletado nativo del teclado por un panel propio semitransparente junto a Cliente, CID y Contacto.
+- Los resultados muestran nombre, CID y contacto; al seleccionar uno, se rellenan los tres campos.
+- Incluye botón para ocultar, cierre con Escape y al tocar fuera. Disponible en Nuevo ingreso y Editar caso.
+- Versión visible dinámica mediante version.txt; caché PWA actualizada.
+
+## V6.0-dev-v82 — sugerencias de clientes y versión visible dinámica
+- Se añaden sugerencias en Nuevo ingreso usando clientes ya registrados en el taller activo.
+- Al introducir un nombre, CID o contacto que coincide exactamente con un cliente único, se completan los otros campos vacíos; no se sobrescriben datos ya escritos.
+- Se incorpora la misma ayuda de sugerencias en Editar caso.
+- La versión visible de la cabecera y el título se leen de `version.txt`, manteniendo una versión de respaldo para uso sin conexión.
+- Se actualiza el caché de la PWA y la referencia de estilos a V82.
+
+## V6.0-dev-v71 — distribución correcta de la ficha económica
+- Columna izquierda: equipo, cliente, ganancia total y tasa CUP/USD.
+- Columna derecha: inversión, incremento e impacto total del taller.
+- El pie conserva estado y técnico apilados a la izquierda y amplía el botón «Examinar» a la derecha; las pegatinas quedan más compactas.
+- Solo cambia la presentación; no se alteran cálculos, datos ni la acción de abrir el ticket.
+
+## V6.0-dev-v70 — ficha económica con columnas independientes
+- ID y fecha ocupan líneas completas al inicio de cada ficha.
+- Equipo/cliente y datos económicos se organizan en dos contenedores internos independientes, evitando huecos artificiales entre columnas.
+- Estado y técnico aparecen apilados en el pie izquierdo con estilo de etiqueta; el botón «Examinar» queda a la derecha y conserva la apertura de la ficha de edición.
+- Sin cambios en cálculos, datos ni lógica de edición.
+
+## V6.0-dev-v69 — ficha económica vertical y legible
+- Se recupera una distribución vertical con ID como título y fecha como subtítulo.
+- Los datos descriptivos y los importes quedan en columnas izquierda/derecha independientes.
+- Estado y zona de acciones tienen espacios separados; el técnico ya no puede tapar las etiquetas de estado.
+- Se recupera un tamaño de letra más legible, manteniendo una adaptación compacta para móvil.
+- Sin cambios en cálculos, datos ni acciones de la ficha.
+
+## V6.0-dev-v68 — ficha económica compacta y equilibrada
+- La fecha aparece debajo del ID; equipo y cliente quedan en líneas separadas.
+- Inversión, incremento del taller e impacto total se distribuyen en tres columnas independientes a lo ancho de la ficha.
+- El técnico se muestra abreviado como «T: Nombre» junto a «Examinar y editar».
+- Se ajustan tipografías y espacios para una ficha más compacta, especialmente en móvil; se mantienen cálculos y acciones existentes.
+
+## V6.0-dev-v66 — ID de ticket a todo el ancho
+- El `ticket_id` aparece como encabezado en la parte superior de cada ficha de Contabilidad y ocupa ambas columnas.
+- Los IDs largos pueden partirse en varias líneas sin desbordar la tarjeta, también en móvil.
+- Se conserva el contenido y la distribución de los datos restantes.
+
+## V6.0-dev-v65 — técnico visible en Contabilidad
+- La lista de Contabilidad muestra el técnico responsable de cada ticket, o «Sin asignar» si no hay técnico registrado.
+- La ficha «Examinar y editar» de Economía también muestra el técnico sin modificarlo desde los controles económicos.
+- Cambio limitado a la interfaz; no se modifica Supabase ni el cálculo económico.
+
 ## V6.0-dev-v64 — fechas comparables en el orden contable
 - La captura confirmó que las fechas de tickets y movimientos ECN no quedaban en orden global al usar «Más antiguos».
 - El comparador ahora normaliza fechas ISO (`AAAA-MM-DD`) y fechas con barras (`DD/MM/AAAA`) al mismo formato antes de ordenar tickets y movimientos en conjunto.
@@ -282,6 +347,13 @@
 
 # NEXUM Taller — registro de cambios
 
+## V6.0-dev-v71 — distribución correcta de la ficha económica
+- Columna izquierda: equipo, cliente, ganancia total y tasa CUP/USD.
+- Columna derecha: inversión, incremento e impacto total del taller.
+- El pie conserva estado y técnico apilados a la izquierda y amplía el botón «Examinar» a la derecha; las pegatinas quedan más compactas.
+- Solo cambia la presentación; no se alteran cálculos, datos ni la acción de abrir el ticket.
+
+
 ## V6.0-dev-v15 — sincronización entre dispositivos
 - Los cambios remotos se aplican automáticamente cuando no hay operaciones locales pendientes para esa entidad y no hay un diálogo abierto.
 - Los conflictos y cambios que no pueden aplicarse de forma segura se conservan en una sección visible de revisión.
@@ -291,3 +363,71 @@
 
 ## V6.0-dev-v14
 - Versión anterior; corrección de la clave pública de sincronización.
+
+
+## V6.0-dev-v72 — pie de ficha económica
+- Se fija la columna de estado y técnico a la izquierda, manteniendo las pegatinas apiladas y sus tamaños actuales.
+- El botón «Examinar» ocupa la columna derecha, centrado verticalmente y sin intercalarse entre las pegatinas.
+- Solo se modifica la presentación; se conservan los datos y la acción existente del botón.
+
+
+## V6.0-dev-v73 — pie económico más discreto
+- Se mantiene estado y técnico apilados a la izquierda, evitando que la pegatina de estado salte de línea.
+- Se reduce la altura del botón «Examinar» y el espacio superior del pie para una fila más compacta.
+- Se conserva la posición del botón a la derecha y no se alteran datos ni acciones.
+
+
+## V6.0-dev-v74 — tarjetas económicas adaptables
+- Los movimientos se presentan en tarjetas independientes con ancho máximo, adaptándose a una, dos o tres columnas según el espacio disponible.
+- La línea divisoria queda limitada al ancho de cada tarjeta.
+- Las pegatinas de estado y técnico quedan más compactas; el botón «Examinar» aumenta ligeramente de tamaño y se alinea hacia la derecha.
+- Sin cambios en datos, cálculos ni acciones.
+
+
+## V6.0-dev-v75 — tarjetas ECN alineadas con TK
+- Los movimientos ECN adoptan la tarjeta con borde, fondo, ID y fecha arriba, datos en columnas y pie separado, como las fichas TK.
+- Se conservan los importes, moneda, tasa, notas y acciones existentes de editar y borrar.
+- Ajuste visual adaptable para móvil y pantallas amplias; sin cambios en cálculos ni persistencia.
+
+
+## V6.0-dev-v76 — corregir contenedor visual ECN
+- Se refuerza el estilo de tarjeta ECN con selectores específicos para que los estilos generales no distribuyan los campos como elementos sueltos.
+- ID y fecha arriba, concepto/tasa y cantidad en columnas, acciones en un pie dentro de la tarjeta.
+- Ajuste adaptable para móvil; sin cambios contables ni en las acciones.
+
+
+## V6.0-dev-v77 — mosaico adaptable en Cola e Histórico
+- Cola e Histórico agrupan las tarjetas TK en columnas cuando el ancho lo permite; en pantallas estrechas mantienen una tarjeta por fila.
+- El modo Lista conserva el formato tabular de una fila por registro y refuerza el contraste de los colores de estado para acercarlos a los del mosaico.
+- No se modifica el contenido de las tarjetas ni la lógica de filtros, orden, estados o acciones.
+
+
+## V6.0-dev-v78 — ajuste de tarjetas y colores en tema oscuro
+- Cola e Histórico: tarjetas TK con ancho máximo controlado para formar mosaico cuando haya espacio; en pantallas estrechas, una por fila.
+- Contabilidad: las tarjetas ECN ocupan el ancho disponible de cada celda y distribuyen sus datos dentro de una ficha completa, sin quedar estrechas ni centradas.
+- Modo Lista: estados con fondos oscuros y texto legible en tema oscuro, tanto en tema seleccionado como en tema del sistema.
+- Sin cambios en datos, contabilidad ni acciones.
+
+
+## V6.0-dev-v79 — detalles finales de tarjetas
+- Los sellos de garantía de Cola e Histórico se independizan del título y quedan anclados a la esquina superior derecha de cada tarjeta.
+- El pie de las tarjetas ECN (separador y botones) queda abajo, manteniendo la información en la parte superior.
+- Sin cambios en lógica ni datos.
+
+
+## V6.0-dev-v79 — pie de ECN y sello de garantía
+- Tarjetas ECN: la línea divisoria y los botones Editar/Borrar quedan al pie de la tarjeta, separados del contenido y sin dejar un espacio excesivo debajo de los botones.
+- Cola e Histórico en mosaico: el sello de garantía se independiza del nombre y queda anclado a la esquina superior derecha de la tarjeta.
+- Sin cambios en datos ni lógica funcional.
+
+
+## V6.0-dev-v80 — campo CID en tickets
+- Se añade CID opcional al formulario, detalle y edición de tickets.
+- El CID se conserva al editar y al crear un reingreso por garantía; forma parte del registro y del flujo de sincronización existente.
+- Se incluye CID en la exportación a Excel y se normalizan los tickets antiguos sin CID sin alterar otros datos.
+- El autocompletado y las sugerencias se implementarán en el siguiente paso con pruebas específicas.
+
+
+## V6.0-dev-v81 — CID visible en Examinar y Editar
+- Se presenta el CID como campo explícito en el detalle y el formulario de edición, además del guardado explícito al confirmar los cambios.
+- Se renueva la caché PWA para evitar que el navegador mantenga la interfaz anterior.
