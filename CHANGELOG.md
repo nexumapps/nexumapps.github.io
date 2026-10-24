@@ -1,3 +1,11 @@
+## V6.0.15 — Fecha de salida y estado «Listo para devolver»
+- Se añade Fecha de salida en Nuevo ingreso, inmediatamente después de Fecha de entrada, y se guarda el valor introducido.
+- Se exige coherencia entre Fecha de salida y estado final, tanto al crear como al editar; no se asigna ni elimina la fecha automáticamente.
+- Se permite cerrar directamente desde cualquier estado previo, sin obligar a recorrer estados intermedios.
+- Se añade «Listo para devolver» al grupo amarillo «Listos», junto a «Listo para recoger».
+- En Histórico, Examinar muestra el CID entre Cliente y Contacto; la edición permanece manual, sin sugerencias ni autocompletado de clientes.
+- Se actualiza la versión de producción y se renueva la caché de la PWA.
+
 ## V6.0-dev-v86 — panel único y clientes sin duplicados
 - Se fuerza el cierre global de cualquier panel abierto antes de abrir el correspondiente al campo activo.
 - Se eliminan paneles previos del campo antes de crear uno nuevo, evitando duplicación por inicializaciones repetidas.
