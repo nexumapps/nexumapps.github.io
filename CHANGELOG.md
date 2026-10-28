@@ -1,3 +1,13 @@
+## V6.0.16 — estabilidad de edición, garantías y reingresos
+- Publica como versión estable los cambios probados en Sandbox hasta V6.0.68beta.
+- Añade «Cancelar» a la edición del Histórico para descartar el borrador sin modificar el ticket original.
+- Mantiene las validaciones de fecha de salida y estado final; una edición o ingreso rechazado no guarda cambios parciales ni altera la tasa recordada.
+- Corrige el vencimiento de garantías al final de mes y mantiene incluido el propio día de vencimiento.
+- Enlaza los reingresos normales y por garantía con el ticket anterior y muestra esa referencia en «Examinar».
+- Distingue el motivo de reingreso de la garantía concedida al cliente; no altera automáticamente el historial de garantías.
+- Ajusta la versión visible y renueva las referencias de recursos y caché PWA.
+- Mantiene el mismo proyecto Supabase; los enlaces de recuperación se construyen con el origen del sitio activo para apuntar al dominio de producción al solicitarse desde Main.
+
 ## V6.0.15 — Fecha de salida y estado «Listo para devolver»
 - Se añade Fecha de salida en Nuevo ingreso, inmediatamente después de Fecha de entrada, y se guarda el valor introducido.
 - Se exige coherencia entre Fecha de salida y estado final, tanto al crear como al editar; no se asigna ni elimina la fecha automáticamente.
